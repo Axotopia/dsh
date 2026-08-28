@@ -22,6 +22,18 @@ the sibling `debate-team-public` package for the standalone script, skill, and R
 
 ## Install
 
+> **Zero-setup path — let DSH install it for you.** In any DSH session, just
+> point it at this repository — no target path, no manual steps:
+>
+> > "Install the agent preset at
+> > https://github.com/Axotopia/dsh/tree/main/debate-team and verify it mounts."
+>
+> Notes: this preset has **no runtime dependencies** — no server, no Node.js,
+> no browser — so "install" means copying the folder into a preset root DSH
+> scans and mounting it. **Full Access to the filesystem is needed only because
+> the preset lands *outside* the session workspace**; approve any prompts the
+> agent raises. Skip this path if you prefer the manual copy below.
+
 A preset is a directory holding an `agent.cordis.yml`. Copy this folder (renamed
 `debate-team`) into any preset root DSH scans. The user root is per-machine:
 
