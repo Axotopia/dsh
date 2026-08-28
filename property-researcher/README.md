@@ -110,7 +110,25 @@ is not.
 
 ## Install
 
+> **Zero-setup path — let DSH install it for you.** In any DSH session, tell the
+> agent:
+>
+> > "Install the agent preset from this repository into
+> > `%USERPROFILE%\.dsh\.agent-presets\property-researcher`, install its server
+> > dependencies (npm or pnpm), and verify it mounts. If Node.js is missing
+> > from PATH, install it first. Grant Full Access to the filesystem for this
+> > job."
+>
+> Notes: **Full Access is needed only because the preset lands *outside* the
+> session workspace** — the browser tier itself runs in the host-spawned MCP
+> server and never needs elevated permissions. Approve any prompts the agent
+> raises, and log into your research portals once in the browser window
+> afterwards. Skip this path if you prefer the deterministic manual steps
+> below.
+
 From the repo root:
+
+
 
 ```bat
 INSTALL.cmd
