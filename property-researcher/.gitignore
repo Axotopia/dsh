@@ -1,0 +1,14 @@
+# DSH runtime / local state
+node_modules/
+browser-profiles/
+
+# Session outputs (generated per-parcel, never commit)
+gut_check_*.md
+final_report_*.md
+bim_payload*.json
+*harvest*.json
+*.pdf
+
+# OS noise
+.DS_Store
+Thumbs.db
