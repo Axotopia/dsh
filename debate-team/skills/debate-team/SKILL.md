@@ -154,6 +154,12 @@ const sides = (Array.isArray(args.sides) && args.sides.length >= 2)
 // A multi-LLM debate = different routes per role; leave all null for a
 // same-model panel. args.models can override any single key at run time.
 // Providers must have a registered adapter at call time.
+//
+// Prefer lineage diversity, not just vendor diversity: models from one
+// lineage share a routing layer and an invisible baseline, so a panel drawn
+// from a single culture can AMPLIFY a blind spot instead of checking it. Put
+// the contrast on the adversarial axis (PRO vs CON) — see "Three Ways an AI
+// Lies to You" (axoworks.com/articles/three-ways-ai-lies).
 const DEFAULT_ROUTES = {
   affirmative: null,   // PRO     — e.g. 'openrouter/deepseek-chat'
   negative: null,      // CON     — e.g. 'zai/glm-5.3'
