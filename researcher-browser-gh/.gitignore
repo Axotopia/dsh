@@ -1,0 +1,15 @@
+# dependencies (produced by INSTALL.cmd / npm / pnpm on the target machine)
+node_modules/
+
+# local renderer scratch + outputs
+.dsh-md2pdf-tmp/
+*.pdf
+
+# editor / OS noise
+.vscode/
+.idea/
+Thumbs.db
+.DS_Store
+
+# local build artifacts (not part of the distributable)
+.build/
