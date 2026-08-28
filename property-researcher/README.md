@@ -71,9 +71,42 @@ jurisdictions trigger a discovery ladder before any analysis.
 ## Requirements
 
 - **Windows** with **DSH** (DeepSeek Harness) installed — tested on 0.1.1-rc.2
-- **Node.js ≥ 20** in PATH
-- A Chromium-family browser (Edge ships with Windows) — browser tier + PDF rendering
+- **Node.js ≥ 20** in PATH (`npm` ships with it; `pnpm` optional). This is a
+  genuine requirement, not a formality: DSH spawns the preset's MCP server as a
+  **separate** `node` process resolved from PATH, so Node must be installed
+  even though DSH itself runs on a Node runtime.
+- A **Chromium-family browser** (Edge ships with Windows) — browser tier + PDF rendering
 - One-time internet access on install (MCP server dependencies)
+
+**Python is not required.** The entire stack is JavaScript (server, plugin) and
+batch files (launcher/installer); `puppeteer-core` does not download a browser
+either. No admin rights required — everything lands under the user profile.
+
+### Installing Node.js (Windows 11)
+
+Property Researcher needs a Node.js **LTS** release (v20 or newer) in PATH.
+Two easy ways:
+
+- **Recommended — winget** (ships with Windows 11). In a terminal:
+  ```bat
+  winget install OpenJS.NodeJS.LTS
+  ```
+- **Manual** — go to <https://nodejs.org>, download the **LTS** installer
+  (`.msi`), run it, and keep the default options (it adds Node to PATH and
+  installs `npm` for you).
+
+Verify either way by opening a **new** terminal:
+
+```bat
+node --version
+npm --version
+```
+
+`node --version` must print `v20.x` or newer. PATH changes only apply to
+newly started processes — if you installed Node while DSH was running, restart
+DSH (and the terminal) before running `INSTALL.cmd`. That's the whole setup:
+`INSTALL.cmd` will confirm Node is present and error with a clear message if it
+is not.
 
 ## Install
 
