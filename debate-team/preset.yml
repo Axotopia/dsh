@@ -1,0 +1,7 @@
+name: Debate Team
+description: >-
+  A structured multi-LLM debate operator: three debaters (Pro, Con, Neutral
+  Expert) through opening statements, rebuttal rounds, and closing, then a
+  moderator verdict — all as one workflow run. Built on the full `standard`
+  toolset with a debate-operator persona.
+order: 10
