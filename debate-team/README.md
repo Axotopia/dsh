@@ -73,16 +73,18 @@ The script doesn't care which models you use. Open `debate-team.workflow.js` and
 
 ```js
 const DEFAULT_ROUTES = {
-  affirmative: 'openrouter/deepseek-chat',          // PRO
-  negative:    { provider: 'zai', model: 'glm-5.3' }, // CON
-  expert:      'moonshotai/kimi-k3',                // NEUTRAL
-  moderator:   'ollama/qwen2.5:32b'                 // REFEREE
+  affirmative: 'zai/glm-5.3',                        // PRO  — Zhipu GLM (CN lineage)
+  negative:    'openrouter/anthropic/claude-sonnet-4', // CON — Anthropic Claude (Western lineage)
+  expert:      'moonshotai/kimi-k3',                 // NEUTRAL — Moonshot Kimi (CN lineage)
+  moderator:   'deepseek-official/deepseek-v4-pro'   // MODERATOR — DeepSeek V4 Pro
 };
 ```
 
 Each value is `"provider/model"`, `{ provider, model }`, or `null` (inherit the
 session route). All-`null` is a valid same-model panel. Providers must have a
 registered adapter in your DSH settings at call time.
+
+> **Lineage matters:** don't draw the whole panel from one model culture — same-lineage models share a routing layer and an invisible baseline, so put the cross-lineage contrast on the adversarial axis (PRO vs CON). The earlier correlated all-Chinese-lineage example panel is preserved at commit `ca6c402`.
 
 ## Why the persona matters
 

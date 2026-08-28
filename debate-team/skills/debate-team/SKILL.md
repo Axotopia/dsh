@@ -161,10 +161,10 @@ const sides = (Array.isArray(args.sides) && args.sides.length >= 2)
 // the contrast on the adversarial axis (PRO vs CON) — see "Three Ways an AI
 // Lies to You" (axoworks.com/articles/three-ways-ai-lies).
 const DEFAULT_ROUTES = {
-  affirmative: null,   // PRO     — e.g. 'openrouter/deepseek-chat'
-  negative: null,      // CON     — e.g. 'zai/glm-5.3'
+  affirmative: null,   // PRO     — e.g. 'zai/glm-5.3' (cross-lineage contrast on the adversarial axis)
+  negative: null,      // CON     — e.g. 'openrouter/anthropic/claude-sonnet-4'
   expert: null,        // NEUTRAL — e.g. 'moonshotai/kimi-k3'
-  moderator: null      // MODERATOR — e.g. 'ollama/qwen2.5:32b'
+  moderator: null      // MODERATOR — e.g. 'deepseek-official/deepseek-v4-pro'
 };
 const models = (args.models && typeof args.models === 'object' && !Array.isArray(args.models)) ? args.models : {};
 
