@@ -1,145 +1,110 @@
-# debate-team — a multi-LLM debate panel for DeepSeek Harness
+# Debate Team — a DSH agent preset for structured multi-LLM debates
 
-A reusable **3-debater + moderator** debate engine that runs inside [DeepSeek Harness (DSH)](http://127.0.0.1) as a single `workflow` tool run. Three role-bounded models argue a motion across opening statements, rebuttal rounds, and closings — then a moderator judge produces a structured verdict with scores, the strongest and weakest arguments, and a winner.
+A [DeepSeek Harness](http://127.0.0.1) **agent preset** that turns a session into a
+**debate operator**: when you ask for a debate or a multi-perspective verdict, it
+runs one structured `workflow` debate — **Affirmative (Pro)** vs **Negative (Con)**
+with a **Neutral Expert** fact-checking both — then a **Moderator** renders a
+structured verdict (winner, per-side scores, strongest/weakest argument).
 
-```
-Opening statements (parallel)
-   ├─ PRO    — argues FOR the motion
-   ├─ CON    — argues AGAINST the motion
-   └─ NEUTRAL — expert assessor: flags fallacies, evidence gaps, weak claims
-Rebuttal round 1 (sequential turn-taking, each sees the others' latest)
-Rebuttal round 2 (sequential turn-taking)
-Closing statements (parallel)
-Moderator verdict (structured: winner, scores, strongest/weakest arguments)
-```
+This is the *session mode* companion to the **debate-team** script + skill. If you
+just want the runnable thing without a new session mode, grab that instead — see
+the sibling `debate-team-public` package for the standalone script, skill, and README.
 
-Each role runs on **its own model route** — point PRO, CON, NEUTRAL, and MODERATOR at different providers/models for a genuine multi-LLM panel, or leave them all on your session model.
+## What's in here
 
-## What this is (and isn't)
-
-| Piece | Role |
+| File | Purpose |
 |---|---|
-| `debate-team.workflow.js` | The orchestration script (the "moderator's engine"). Runs inside the `workflow` tool: phases, parallel/sequential turns, per-role model routes, structured-output schemas. |
-| `skills/debate-team/SKILL.md` | A DSH skill — self-contained (inline script included) — so any session can load the playbook and run a debate on user request. |
-| Your DSH install | Provides the actual primitives: the `workflow` tool, subagent children, and your configured model providers. Nothing here talks to APIs directly. |
-
-It is **not** a new agent type, plugin, or preset — it is configuration + one orchestration script on top of DSH's existing multi-agent primitives. You can't "hack the core" to do this; the workflow engine is the designed seam.
-
-## Requirements
-
-- DeepSeek Harness Desktop (developed and tested on `0.1.1-rc.2`; you need a build that ships the `workflow` tool — the shipped `standard` preset already grants it).
-- At least one configured model provider. For a true multi-LLM panel, configure two or three providers and make sure their API keys are set in DSH settings.
-- Local models (e.g. Ollama) work for any role, provided the server is running and the model is pulled.
+| `agent.cordis.yml` | The preset composition — a copy of the shipped `standard` toolset (shell, filesystem, skills, goals, plan, compaction, delegation + workflow) with the persona swapped to a **debate operator**. |
+| `preset.yml` | Metadata (name / description / order) shown by the roster & settings UI. |
+| `skills/debate-team/SKILL.md` | The bundled debate skill (self-contained — includes the orchestration script) so a session on this preset can run a debate on request. Bundling it under `skills/` is what makes it auto-discoverable for this preset. |
+| `debate-team.workflow.js` | The orchestration script (canonical copy) — the skill embeds the same body. |
+| `LICENSE` | MIT. |
 
 ## Install
 
-Pick whichever fits your workflow:
+> **Zero-setup path — let DSH install it for you.** In any DSH session, just
+> point it at this repository — no target path, no manual steps:
+>
+> > "Install the agent preset at
+> > https://github.com/Axotopia/dsh/tree/main/debate-team, and verify it
+> > mounts — start a session on the Debate Team mode and ask for a short
+> > test debate. Grant Full Access to the filesystem for this job."
+>
+> Notes: **Full Access is needed only because the preset lands *outside* the
+> session workspace** (%USERPROFILE%\.dsh\.agent-presets\) — the debate
+> itself runs as workflow children under fixed, non-escalating scope and never
+> needs elevated permissions. There are no dependencies to install: the panel
+> is YAML + one skill + one script, and all model traffic goes through your
+> existing DSH provider configuration. Approve any prompts the agent raises,
+> and add missing provider keys in Settings → Models if the test debate
+> reports a failed seat. Skip this path if you prefer the deterministic manual
+> steps below.
 
-**Option A — as a skill (recommended).** Copy the skill bundle into a skill root. DSH scans, in priority order:
+A preset is a directory holding an `agent.cordis.yml`. Copy this folder (renamed
+`debate-team`) into any preset root DSH scans. The user root is per-machine:
 
-1. `<project>/.dsh/skills` — per-repo
-2. `~/.dsh/skills` (`%USERPROFILE%\.dsh\skills` on Windows) — per-user, all projects
+- **Windows:** `%USERPROFILE%\.dsh\.agent-presets\debate-team`
+- **macOS / Linux:** `~/.dsh/.agent-presets/debate-team`
+
+Or drop it under a project-scoped preset root (whatever your deployment configures).
 
 ```powershell
-# project-level
-New-Item -ItemType Directory -Force .\.dsh\skills\debate-team | Out-Null
-Copy-Item skills\debate-team\SKILL.md .\.dsh\skills\debate-team\SKILL.md
-
-# or user-level
-New-Item -ItemType Directory -Force $env:USERPROFILE\.dsh\skills\debate-team | Out-Null
-Copy-Item skills\debate-team\SKILL.md $env:USERPROFILE\.dsh\skills\debate-team\SKILL.md
+# user root (Windows)
+New-Item -ItemType Directory -Force $env:USERPROFILE\.dsh\.agent-presets | Out-Null
+Copy-Item .\debate-team-preset-public $env:USERPROFILE\.dsh\.agent-presets\debate-team -Recurse
 ```
 
-Also drop `debate-team.workflow.js` somewhere your project keeps scripts (optional — the skill is self-contained).
+Then in DSH, pick the **Debate Team** mode for a session.
 
-**Option B — script only.** Keep `debate-team.workflow.js` in your workspace and ask your agent to run it with the `workflow` tool (it must pass `meta` + `script` + `args`; see below).
+## Use
 
-## Configure your team
+1. Select the **Debate Team** preset as your session mode.
+2. Ask for a debate — e.g. **"Debate: this house believes open source should dominate enterprise AI."**
+3. The operator runs one `workflow` call (openings → rebuttal rounds → closing → moderatory verdict) and surfaces the verdict + transcript.
 
-Open `debate-team.workflow.js` and set `DEFAULT_ROUTES` — the single place where roles meet models:
+> The `workflow` tool is used only when you ask for a debate / large multi-agent
+> orchestration (per its policy). For an ordinary question the operator just does
+> the task — it does not launch a debate unprompted.
+
+## Configure the models (make it a real multi-LLM panel)
+
+The script doesn't care which models you use. Open `debate-team.workflow.js` and set
+`DEFAULT_ROUTES` — this is where the standing team lives:
 
 ```js
 const DEFAULT_ROUTES = {
-  affirmative: 'openrouter/deepseek-chat', // PRO     — "provider/model" string
-  negative:    { provider: 'zai', model: 'glm-5.3' }, // CON — or an object
-  expert:      'moonshotai/kimi-k3',      // NEUTRAL
-  moderator:   'ollama/qwen2.5:32b'       // MODERATOR — local model works too
+  affirmative: 'openrouter/deepseek-chat',          // PRO
+  negative:    { provider: 'zai', model: 'glm-5.3' }, // CON
+  expert:      'moonshotai/kimi-k3',                // NEUTRAL
+  moderator:   'ollama/qwen2.5:32b'                 // REFEREE
 };
 ```
 
-Each value is `"provider/model"`, `{ provider, model }`, or `null`. `null` means *inherit the session route* — all-null is a valid (same-model) panel. Providers must have a registered adapter in your DSH settings at call time.
+Each value is `"provider/model"`, `{ provider, model }`, or `null` (inherit the
+session route). All-`null` is a valid same-model panel. Providers must have a
+registered adapter in your DSH settings at call time.
 
-**Prefer lineage diversity, not just vendor diversity.** Models from one lineage share a routing layer and an invisible baseline (see *Three Ways an AI Lies to You*, axoworks.com/articles/three-ways-ai-lies); a panel drawn from a single culture can amplify a blind spot instead of checking it. Put the contrast on the adversarial axis — PRO vs CON — and draw NEUTRAL and MODERATOR from yet other lineages.
+## Why the persona matters
 
-## Usage
+The composition is deliberately the full `standard` toolset with a narrower persona.
+That matters for two reasons:
 
-With the skill installed, just ask:
+- **The preset isn't the debaters.** A preset composes *one* agent. The debaters are
+  subagents spawned at call time by the `workflow` engine; the moderator is the
+  script. You cannot configure three different debater plugins or assign models in
+  a preset — that's a common misconception. The workflow engine is the orchestration
+  seam.
+- **Strict roles.** The operator's persona enforces the important rule: the debaters
+  argue, the expert fact-checks, the moderator judges — nobody summarizes the whole
+  debate or calls tools, and the operator never argues for a side.
 
-> **You:** Debate: *this house believes open source should dominate enterprise AI*
-> **Agent:** (runs one `workflow` call → returns the full structured transcript + verdict)
+## Sanitized for public distribution
 
-Direct invocation arguments (the `args` object of the `workflow` tool call):
-
-| key | type | default | meaning |
-|---|---|---|---|
-| `motion` | string (required) | — | The debate motion/topic. |
-| `context` | string | `''` | Optional background/facts all debaters receive. |
-| `sides` | array | PRO / CON / NEUTRAL | Custom debaters: `[{ key, label, persona }]`, at least 2 roles. |
-| `models` | object | `DEFAULT_ROUTES` | Per-run route overrides, any of `{ affirmative, negative, expert, moderator }`. |
-| `rebuttalRounds` | number | `2` | Rebuttal rounds, `0`–`4`. |
-| `maxWordsPerTurn` | number | `180` | Per-statement word cap, `60`–`600`. |
-
-A minimal call:
-
-```js
-args = { motion: 'AI coding agents will replace most human developers within 10 years' }
-```
-
-## What you get back
-
-Plain JSON — one object with the full debate:
-
-```json
-{
-  "motion": "…",
-  "sides": [{ "key": "affirmative", "label": "Affirmative (Pro)" }, "…"],
-  "openingStatements": [
-    { "side": "affirmative", "statement": "…", "keyPoints": ["…"], "failed": false }
-  ],
-  "rebuttalRounds": [ [ "… per round, per side …" ] ],
-  "closingStatements": [ "…" ],
-  "verdict": {
-    "winner": "Negative (Con)",
-    "summary": "…",
-    "scores": [{ "side": "…", "score": 7, "rationale": "…" }],
-    "strongestArgument": "…",
-    "weakestArgument": "…"
-  },
-  "config": { "rebuttalRounds": 2, "maxWordsPerTurn": 180 }
-}
-```
-
-## Design principles (keep these when adapting)
-
-- **Strict role personas.** Debaters never moderate, never summarize the whole debate, and never call tools. (Their sandbox/approval scope is also fixed at delegation time, so they can't self-escalate.)
-- **Context management.** Every debater gets a *condensed* debate state — the previous round's statements, truncated per role — never the raw transcript. The moderator gets the full condensed transcript. This keeps payloads bounded as rounds grow.
-- **Structured output.** Debaters return `{ statement, keyPoints }`; the moderator returns a verdict object. Schemas are limited to the workflow engine's allowed keyword set.
-- **Parallel vs sequential.** Independent turns (openings, closings) run in parallel; rebuttal rounds run sequentially so each debater reacts to the others' latest statements.
-- **Graceful degradation.** A child that fails (bad route, missing key, provider error) returns a clearly marked `[debater failed to respond]` placeholder; the debate and the verdict still complete, and the moderator will note the absence.
-
-## Troubleshooting
-
-- **A debater returns `[debater failed to respond]`** → the route didn't resolve: provider id unknown to DSH, missing/invalid API key, model id not served by that provider, or Ollama not running. Fix the route in `DEFAULT_ROUTES` or `args.models`.
-- **Probe a route before a long debate** (quick workflow one-liner): run `workflow` with a script that does `return agent('Reply OK', { label: 'probe', provider: '…', model: '…' })` — a non-null result means the route works.
-- **`args.motion is required`** → pass the motion as a non-empty string.
-- **Debate feels shallow** → raise `rebuttalRounds` (up to 4) or `maxWordsPerTurn` (up to 600), or give richer `context`.
-
-## Cost & safety notes
-
-- Each statement is a real model call: a default debate is **13 calls** (3 openings + 6 rebuttals + 3 closings + 1 verdict), each with its own context. Route your most expensive model to the role that benefits (usually the moderator).
-- All model traffic goes through your existing DSH provider configuration — there are no new endpoints, keys, or credentials in this repo.
-- Debate children inherit the standard DSH sandbox; they cannot widen their own permissions.
+This folder is a clean, self-contained copy:
+- No credentials, API keys, or provider secrets (model routes live in your own settings).
+- No machine paths, personal or company data, or account-specific endpoints.
+- Neutral, generic personas and English metadata; no bundled examples tied to any specific project.
 
 ## License
 
-MIT — see [LICENSE](LICENSE). (Add your name/copyright line before publishing.)
+MIT — see `LICENSE`.
