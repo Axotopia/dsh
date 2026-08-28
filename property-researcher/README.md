@@ -110,14 +110,13 @@ is not.
 
 ## Install
 
-> **Zero-setup path — let DSH install it for you.** In any DSH session, tell the
-> agent:
+> **Zero-setup path — let DSH install it for you.** In any DSH session, just
+> point it at this repository — no target path, no manual steps:
 >
-> > "Install the agent preset from this repository into
-> > `%USERPROFILE%\.dsh\.agent-presets\property-researcher`, install its server
-> > dependencies (npm or pnpm), and verify it mounts. If Node.js is missing
-> > from PATH, install it first. Grant Full Access to the filesystem for this
-> > job."
+> > "Install the agent preset at
+> > https://github.com/Axotopia/dsh/tree/main/property-researcher, install any
+> > dependencies it needs, and verify it mounts. If Node.js is missing from
+> > PATH, install it first. Grant Full Access to the filesystem for this job."
 >
 > Notes: **Full Access is needed only because the preset lands *outside* the
 > session workspace** — the browser tier itself runs in the host-spawned MCP
