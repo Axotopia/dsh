@@ -8,16 +8,17 @@ Welcome to the Axotopia **DSH** repository. This collection contains a set of pr
 ## The Architectural Approach to AI
 We are rapidly moving past the era of standard prompt-and-response chatbots and into an architectural approach to artificial intelligence. Think of these presets not just as code, but as blueprints for cognitive workflows. Just as a physical building requires a solid foundation, load-bearing structures, and clear circulation paths, a multi-agent system needs structured routing, resilient memory management, and well-defined tools to operate reliably without collapsing under its own weight. These presets are designed with that structural integrity in mind.
 
-## Usage & Modification
-Please note that these presets are provided strictly as **proof of concept** models. They are not intended to be drop-in, production-ready solutions out of the box. 
+## Steal it, or bring us in
 
-**You must modify and adapt these presets** to fit your specific data structures, hardware infrastructure, and distinct use cases within DSH. 
+**Self-serve: zero-setup.** The presets are MIT-licensed and free. No cloning, no `INSTALL.cmd`, no manual steps - in any DSH session, just point it at a preset folder in this repository and DSH installs it for you:
 
-1. Clone or download the repository to your local environment.
-2. Review the preset configurations and logic.
-3. Import or map them into your DeepSeek Harness workspace.
-4. Adjust the routing, system prompts, tool integrations, and endpoints to match your specific multi-node orchestrations.
+> "Install the agent preset at https://github.com/Axotopia/dsh/tree/main/researcher, install any dependencies it needs, and verify it mounts. Grant Full Access to the filesystem for this job."
 
+Same pattern for every preset here - `researcher`, `property-researcher`, `debate-team`, `revit-tools`. Approve any prompts the agent raises (Full Access is needed only because the preset lands outside the session workspace). That self-serve path is genuinely enough for most research work.
+
+**Bring us in.** For firms that need it customized - your jurisdictions, your data sources, your compliance rails, an audit panel built for your exact workflow - that's what Axoworks does. We're an architecture/engineering consultancy that ships these systems, not a vendor pushing a subscription. Tell us the research problem; we'll tell you whether a preset solves it or whether you need something bespoke.
+
+> These presets are provided strictly as **proof of concept** models, not drop-in production solutions. Review the composition (`agent.cordis.yml`), routing, system prompts, and tool integrations, and adapt them to your data, hardware, and use cases.
 ## License
 This project is open-source and available for public use under the **MIT License**. You are free to use, modify, and distribute this software as you see fit.
 
