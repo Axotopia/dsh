@@ -678,6 +678,18 @@
     fetch: false
     searchTimeoutMs: 60000
 
+# ── live clock / current-time context (per-step; uses Date.now()) ──────────
+# Opt-in plugin (@deepseek-ai/dsh-time-context): appends a durable per-step
+# timestamp plus a request browser-timezone line to each step's runtime
+# context, from the live clock rather than a fixed date. timeZone is the
+# display/fallback zone (Web sessions use the client/browser zone
+# automatically); refreshIntervalMs: 0 means a fresh reading every step.
+- id: time-context
+  name: '@deepseek-ai/dsh-time-context'
+  config:
+    timeZone: America/Los_Angeles
+    refreshIntervalMs: 0
+
 # Borrowed verbatim from the locally-authored `mdpdf-portable` preset: a
 # dependency-free Markdown→PDF model tool (built-in MD-to-HTML renderer +
 # headless Edge/Chrome --print-to-pdf). Consumes HOST services fs /

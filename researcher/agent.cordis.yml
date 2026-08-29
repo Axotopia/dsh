@@ -262,6 +262,18 @@
     fetch: false
     searchTimeoutMs: 60000
 
+# ── live clock / current-time context (per-step; uses Date.now()) ──────────
+# Opt-in plugin (@deepseek-ai/dsh-time-context): appends a durable per-step
+# timestamp plus a request browser-timezone line to each step's runtime
+# context, from the live clock rather than a fixed date. timeZone is the
+# display/fallback zone (Web sessions use the client/browser zone
+# automatically); refreshIntervalMs: 0 means a fresh reading every step.
+- id: time-context
+  name: '@deepseek-ai/dsh-time-context'
+  config:
+    timeZone: America/Los_Angeles
+    refreshIntervalMs: 0
+
 # ── Research browser MCP bridge — RESEARCHER-BROWSER (attach-only CDP) ─────
 # Self-contained Node MCP server (server/server.js NEXT TO this preset folder)
 # speaking stdio and exposing mcp__research-browser__* tools. ATTACH-only via
