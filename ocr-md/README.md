@@ -98,18 +98,26 @@ item whose pass-1 fails is skipped in later phases, gets `<name>.ocr.ERROR.txt`
 **and** a manifest with `status: "FAILED"`, and the batch continues; a run with
 any failed file still exits 1.
 
-## Using OCR from researcher presets (integration)
+## Using OCR from other presets (integration)
 
-The `researcher` preset (repo `researcher/` — the installed `researcher-browser`) ships with a
-persona line that routes **all** image/PDF text extraction to this pipeline: the agent never
-transcribes images itself and never trusts a single vision read — it runs `ocr.ps1`, then reasons
-over the `.ocr.md` / `.extract.json` artifacts. Division of labor:
+Three presets ship with a persona line that routes **all** image/PDF text extraction to this
+pipeline: the agent never transcribes images itself and never trusts a single vision read — it
+runs `ocr.ps1`, then reasons over the `.ocr.md` / `.extract.json` artifacts. Division of labor:
 
 - **ocr-md owns perception** — pixels become verified text of record (two-pass + judge).
-- **the researcher agent owns judgment** — triage (what to OCR, which flags), then consolidation,
+- **the calling agent owns judgment** — triage (what to OCR, which flags), then consolidation,
   anomaly flagging, and cross-page checks on the extracted text.
 
-Requirements on the machine running researcher sessions: this preset installed at
+Integrated presets:
+
+- `researcher` (repo `researcher/` — installed `researcher-browser`): the original integration.
+- `research-swarm` (repo `research-swarm/`): same line plus a delegation clause — the
+  orchestrator puts the document path (and `-Json` if wanted) in each child's brief; children
+  share the composition and apply the same rule themselves.
+- `property-researcher` (repo `property-researcher/`): the line verbatim — county/LIM/title
+  PDFs are frequently scanned, so extraction goes through the verified pipeline too.
+
+Requirements on the machine running those sessions: this preset installed at
 `%USERPROFILE%\.dsh\.agent-presets\ocr-md` (use `INSTALL.cmd` from the repo `ocr-md/` folder),
 Ollama reachable with the ladder models pulled (table above), and `py` + `pypdfium2` for PDFs.
 Everything stays local; the cloud tier remains off unless all three opt-in conditions (below)
