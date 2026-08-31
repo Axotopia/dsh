@@ -187,6 +187,35 @@ Flag anything you couldn't verify."*
 | `RESEARCH_AUTO_LAUNCH` | `1` (on) | `0` disables automatic running of launch-browser.cmd |
 | `RESEARCH_AUTO_LAUNCH_TIMEOUT_MS` | `25000` | how long auto-start waits for CDP |
 
+## OCR integration (verified local extraction via `ocr-md`)
+
+Researcher does **not** transcribe images itself, and on text-only models it
+*can't* — DSH substitutes a placeholder for image content on routes declared
+text-only. Instead, the persona routes every image/PDF extraction request to the
+[`ocr-md`](../ocr-md/README.md) preset: a two-pass verified local OCR pipeline
+(dedicated OCR model → independent field sweep → judge reconciliation, with
+provenance files and a conflict table for every document).
+
+The persona adds one rule, in short: *never trust a single vision read* — run
+`%USERPROFILE%\.dsh\.agent-presets\ocr-md\ocr.ps1 <path> [-Json]`, then reason
+over the `.ocr.md` / `.extract.json` artifacts it writes. Screenshots stay
+legitimate for layout checks; values and measurements always come from
+extracted page data.
+
+**What the agent does with it** — triage decides *what* to extract and which
+flags to pass (`-Json` for structured records, `-SinglePass` only on explicit
+request); the pipeline decides *how pixels become text*; the agent then does
+the judgment work on top: consolidation across documents, cross-page field
+checks, numeric sanity (ratios, % × total, unit plausibility), and flagging
+unresolvable conflicts instead of silently resolving them.
+
+**Setup** — install the companion preset from [`../ocr-md/`](../ocr-md/) (its
+`INSTALL.cmd` copies it into `%USERPROFILE%\.dsh\.agent-presets\ocr-md` and
+reports Ollama/Python prerequisites), pull the ladder models for your GPU, and
+you're done — the persona resolves the path at runtime. Everything runs local;
+`ocr-md`'s cloud tier is disabled unless three explicit opt-in conditions are
+met (see [its README](../ocr-md/README.md)).
+
 ## Security model
 
 - **Dedicated profile** at `%USERPROFILE%\.dsh\browser-profiles\research` —

@@ -1,0 +1,6 @@
+name: OCR to Markdown
+description: >-
+  OCR & document-conversion specialist: converts images and PDFs to faithful,
+  cross-verified Markdown (plus optional structured JSON) using the local
+  Ollama model ladder — two independent passes with conflict reconciliation,
+  deterministic provenance manifests, and a disabled-by-default cloud tier.
