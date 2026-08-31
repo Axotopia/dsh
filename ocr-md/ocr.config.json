@@ -1,0 +1,38 @@
+{
+  "ollama": {
+    "baseUrl": "http://127.0.0.1:11434",
+    "generateTimeoutSec": 1800
+  },
+  "ladder": [
+    { "order": 1, "model": "glm-ocr:bf16", "num_ctx": 8192, "temperature": 0, "note": "dedicated OCR engine (2.1 GB, 1.1B) — pass-1 workhorse on any box" },
+    { "order": 2, "model": "qwen3.8:27b-bf16-ctx128k", "num_ctx": 16384, "temperature": 0, "note": "strong verifier — needs ~27 GB; on this 96 GB workstation" },
+    { "order": 3, "model": "ornith-1.5:35b-ctx128k", "num_ctx": 16384, "temperature": 0, "note": "35B MoE vision (Q4 21 GB) — needs num_ctx pin, sees CUDA IMA without one" },
+    { "order": 4, "model": "qwen3.6:35b-a3b-bf16", "num_ctx": 16384, "temperature": 0, "note": "35B MoE bf16 — last local tier on this 96 GB workstation" }
+  ],
+  "verification": {
+    "defaultPasses": 2,
+    "reconcileWith": { "model": "qwen3.8:27b-bf16-ctx128k", "num_ctx": 16384, "temperature": 0, "note": "must differ from pass-1 model; falls back to the first other healthy ladder entry" }
+  },
+  "pdf": {
+    "dpi": 300,
+    "textLayer": { "enabled": true, "minChars": 150, "minCharsNoDigits": 600, "note": "page used as-is when its embedded text passes the gate; otherwise rasterized + OCR'd" }
+  },
+  "cloud": {
+    "enabled": false,
+    "provider": "deepseek-api",
+    "endpoint": "https://api.deepseek.com/chat/completions",
+    "model": "deepseek-v4-flash-vision-exp",
+    "apiKeyEnv": "DEEPSEEK_API_KEY",
+    "detail": "original",
+    "limits": { "inlineBodyBytes": 50331648, "imageMaxBytes": 33554432, "imageTokensPerImageMax": 384 },
+    "caveats": "Images are normalized to ~800x800 px (cap 384 tokens). Dense small-font tables: prefer local tiers; treat cloud as independent 2nd opinion / fallback only. Requires -CloudOk per run + $env:DEEPSEEK_API_KEY + explicit user consent."
+  },
+  "output": {
+    "canonicalSuffix": ".ocr.md",
+    "manifestSuffix": ".ocr.manifest.json",
+    "passSuffixes": { "pass1": ".pass1.md", "pass2": ".pass2.txt" },
+    "jsonSuffix": ".extract.json",
+    "trimRepetitionTailMinRepeat": 25,
+    "trimRepetitionTailMaxLineLen": 60
+  }
+}
