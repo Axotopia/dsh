@@ -62,6 +62,8 @@ This hardening was added after a red-team audit of the single-agent `researcher`
 
 **Requirements:** Windows 10/11 (the launcher is a `.cmd` batch file), a recent DSH build carrying the `@deepseek-ai/*` plugin set, Node.js ≥ 20 (DSH's bundled Node works), pnpm 10+, and Microsoft Edge (default) / Chrome / Brave.
 
+**Model requirements: vision is optional.** A vision-capable multimodal LLM is **not** required. The research loop is text-first — `navigate`, `click` (CSS or visible text), `extract_text`, `html`, tab management, and `is_challenge` (DOM-text signature scanning, not pixel analysis) all work with a text-only model, and DSH automatically replaces image content with a text placeholder on routes declared text-only. The one vision-dependent tool is `screenshot` (returns PNG image content): on a text-only model it degrades to that placeholder, so simply skip it. Vision-capable models can use `screenshot` for layout sanity checks — measurements still come from page data, never pixels (evidence protocol).
+
 **First run:** call `browser_status`. If the browser is not running, the tools start it automatically — a visible dedicated-profile window opens. Log in to your research portals once; sessions persist in the dedicated profile.
 
 ## Environment variables

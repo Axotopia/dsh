@@ -82,6 +82,16 @@ jurisdictions trigger a discovery ladder before any analysis.
 batch files (launcher/installer); `puppeteer-core` does not download a browser
 either. No admin rights required — everything lands under the user profile.
 
+**Vision is optional.** A vision-capable multimodal LLM is not required. The
+retrieval loop is text-first — navigate, click (CSS or visible text),
+extract_text, html, tab management, and challenge detection (DOM-text
+signatures, not pixel analysis) all work with a text-only model, and DSH
+automatically replaces image content with a text placeholder on routes declared
+text-only. The one vision-dependent tool is `screenshot` (PNG image content):
+on a text-only model it degrades to that placeholder, so just skip it.
+Vision-capable models can use `screenshot` for layout sanity checks — evidence
+still comes from quoted page text, never pixels.
+
 ### Installing Node.js (Windows 11)
 
 Property Researcher needs a Node.js **LTS** release (v20 or newer) in PATH.
