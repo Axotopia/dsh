@@ -84,6 +84,16 @@ dedicated-profile window opens) and wait briefly for CDP. Set
 batch files (launcher/installer); `puppeteer-core` does not download a browser
 either. No admin rights required — everything lands under the user profile.
 
+**Vision is optional.** A vision-capable multimodal LLM is not required. The
+research loop is text-first — `navigate`, `click` (CSS or visible text),
+`extract_text`, `html`, tab management, and `is_challenge` (DOM-text signature
+scanning, not pixel analysis) all work with a text-only model, and DSH
+automatically replaces image content with a text placeholder on routes declared
+text-only. The one vision-dependent tool is `screenshot` (PNG into vision): on a
+text-only model it degrades to that placeholder, so just skip it. Vision-capable
+models can use `screenshot` for layout sanity checks — measurements still come
+from page data, never pixels (evidence protocol).
+
 ### Installing Node.js (Windows 11)
 
 Researcher needs a Node.js **LTS** release (v20 or newer) in PATH. Two easy ways:
