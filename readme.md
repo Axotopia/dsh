@@ -14,7 +14,9 @@ We are rapidly moving past the era of standard prompt-and-response chatbots and 
 
 > "Install the agent preset at https://github.com/Axotopia/dsh/tree/main/researcher, install any dependencies it needs, and verify it mounts. Grant Full Access to the filesystem for this job."
 
-Same pattern for every preset here - `researcher`, `property-researcher`, `debate-team`, `revit-tools`. Approve any prompts the agent raises (Full Access is needed only because the preset lands outside the session workspace). That self-serve path is genuinely enough for most research work.
+Same pattern for every preset here - `researcher`, `property-researcher`, `research-swarm`, `debate-team`, `revit-tools`. Approve any prompts the agent raises (Full Access is needed only because the preset lands outside the session workspace). That self-serve path is genuinely enough for most research work.
+
+**New: `research-swarm`** - a KIMI-style agent-swarm orchestrator fused with the high-agency research kit: parallel subagent fan-out with workflows and fresh-agent ralph rounds, an evidence-discipline research persona, and a real-browser CDP research tier that is queue-hardened so an entire swarm can safely share one dedicated browser. See [`research-swarm/README.md`](research-swarm/README.md).
 
 **Bring us in.** For firms that need it customized - your jurisdictions, your data sources, your compliance rails, an audit panel built for your exact workflow - that's what Axoworks does. We're an architecture/engineering consultancy that ships these systems, not a vendor pushing a subscription. Tell us the research problem; we'll tell you whether a preset solves it or whether you need something bespoke.
 
