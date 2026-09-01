@@ -1,2 +1,2 @@
 name: Revit Tools
-description: Full Revit 2027 suite: Autodesk's native tools via the official Stdio endpoint + the axo audit suite - single-file server, no venv dependencies. Portable.
+description: "Full Revit 2027 suite: Autodesk's native tools via the official Stdio endpoint + the axo audit suite - single-file server, no venv dependencies. Portable."
