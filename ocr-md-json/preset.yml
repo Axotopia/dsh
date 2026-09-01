@@ -1,0 +1,6 @@
+name: OCR-MD-JSON
+description: >-
+  Consolidation specialist: turns a folder of native PDFs, scanned PDFs and
+  photos into ONE sanitized Markdown record plus a JSON of every table in it,
+  using DSH's own tools (embedded-PDF text extraction, hash dedup, parallel
+  vision subagents) and an optional independent 2-Pass verification.
