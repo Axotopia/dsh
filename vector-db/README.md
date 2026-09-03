@@ -33,6 +33,127 @@ Two facts drive why this helps:
 
 ---
 
+## DSH knowledge base — search your documents (the `kb_*` tools)
+
+This folder also documents the **vector database built into DSH**. It is a separate
+feature from the Python CLI above: a plugin mounted in the DSH host that gives **every
+session** seven `kb_*` tools backed by a local store — SQLite (via Node's built-in
+`node:sqlite`), embeddings from your local Ollama (default model `bge-m3`, 1024-dim),
+and **hybrid retrieval** (semantic cosine + SQLite FTS5 keyword, rank-fused). Every
+search result carries a citation: source file path, page, and section heading, so
+answers stay grounded in your actual documents.
+
+Documents live where they already are (e.g. a network drive) — the store only holds
+extracted text, chunks, embeddings, and citation metadata, never the original files.
+
+Where it lives on disk (no need to touch it day-to-day):
+
+| Path | What |
+|---|---|
+| `%USERPROFILE%\.dsh\kb\tools\kb.mjs` | Worker CLI (parse → chunk → embed → store → search) |
+| `%USERPROFILE%\.dsh\kb\data\kb.db` | The SQLite database (the whole store is this one file) |
+| profile `cordis.patch.yml` | The `kb-vector-tools` row that mounts the tools into DSH |
+
+**Prerequisites:** Ollama running with an embedding model pulled (default `bge-m3`;
+`ollama pull bge-m3`). First-time setup normally happens once, in a DSH session.
+
+### Sample prompts — what's indexed?
+
+> "What's in the knowledge base?"
+
+Runs `kb_status`: collections with active/error/removed document counts, chunk counts,
+embedding model per collection, and the most recent per-file errors.
+
+> "List the documents in the codes collection"
+>
+> "Show me any documents that failed to ingest"
+
+Runs `kb_list` (optionally filtered by collection or `status: active | error | removed`).
+
+### Sample prompts — searching (the main event)
+
+> "Search the codes for dead-end fire apparatus access road requirements"
+>
+> "What does section D103.4 of the fire code say about turnarounds?"
+>
+> "How close can a structure be built to a protected wetland?" *(any question the stored
+> documents might answer — the agent decides to search and cites what it finds)*
+>
+> "Search the knowledge base for wire ampacity tables, top 10 results"
+>
+> "Search only the zoning collection for accessory dwelling unit setbacks"
+
+Notes: exact section numbers hit the keyword channel; paraphrased questions hit the
+semantic channel; both are fused automatically. Answers should cite
+`source path | page | section` — if an answer lacks a citation, ask for one.
+
+### Sample prompts — adding documents
+
+> "Ingest `Z:\RESOURCE\CODES\IFC\Appendix D_Fire Apparatus Access Roads.pdf` into the codes collection"
+
+One file → extracted, chunked, embedded, stored with citation metadata.
+
+> "Ingest the folder `Z:\RESOURCE\CODES` into the codes collection — start with 25 files"
+
+A folder ingests recursively; every file is indexed all-or-nothing, and failures are
+reported per file without stopping the batch. For a first big sync, cap it with a limit
+or expect it to run for a while (embedding throughput is typically ~100+ chunks/sec on a
+modern GPU).
+
+> "Ingest `D:\notes\_contract_review.md` into a new collection called legal"
+
+Collections are created on first use. Each collection remembers its embedding model —
+mixing models inside one collection is refused (drop and rebuild to change models).
+
+Re-ingesting is **idempotent**: unchanged files are skipped by content hash, edited
+files are re-chunked and replace their old chunks atomically (old and new versions are
+never searchable at the same time).
+
+### Sample prompts — fixing and inspecting
+
+> "Why did some documents fail? Show me the errors"
+
+Failed documents are kept in the store as `status: error` with the reason (corrupt PDF,
+unsupported format, no extractable text — e.g. a scanned page needing OCR).
+
+> "Re-ingest `Z:\RESOURCE\CODES\NEC\cc76.pdf` after the fix"
+
+Rebuilds one document from scratch and clears its error state.
+
+> "Show me what got chunked out of that appendix — first 5 chunks"
+
+Runs `kb_inspect`: the document's metadata plus chunk previews with page/heading. Use
+this when a document answers poorly and you want to see exactly what the agent sees.
+
+### Sample prompts — removing documents
+
+> "Remove `Z:\RESOURCE\CODES\old-code-2019.pdf` from the knowledge base"
+
+Returns a **preview** of what would be removed — nothing is deleted until you confirm.
+
+> "Yes, apply"
+>
+> "Actually purge it completely"
+
+Default is a **soft delete** (immediately hidden from search, recoverable);
+`purge` hard-deletes the document, its chunks, and index rows. Bulk variants work too:
+"remove everything with status error" or "wipe the whole zoning collection" — always
+preview-first, and the tool refuses to run without at least one filter.
+
+### Housekeeping tips
+
+- Organize by collection per domain (`codes`, `zoning`, `health`, `finance`, `legal`) —
+  searches can be restricted per collection and results always name their collection.
+- Obsolete editions: you may keep both old and new editions tagged with different file
+  names/collections; the citation tells you which source an answer came from.
+- Power users can bypass the chat entirely: `node %USERPROFILE%\.dsh\kb\tools\kb.mjs status`
+  (also `ingest`, `search`, `list`, `forget`, `reingest`, `inspect`, `probe`).
+- The store is one SQLite file — back it up by copying `kb.db` while DSH is not ingesting.
+- Scanned/image-only PDFs currently fail with "no extractable text"; OCR support is a
+  planned enhancement (Ollama OCR models can be wired into the worker's parse step).
+
+---
+
 ## Install / prerequisites
 
 > **Zero-setup path — let DSH install it for you.** In any DSH session, just
