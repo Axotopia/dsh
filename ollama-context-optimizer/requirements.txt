@@ -1,0 +1,12 @@
+# No pip packages are required — this project uses only the Python standard library.
+#
+# System-level prerequisites (installed separately; not pip):
+#   * Python 3.9+          — `python3` / `python`
+#   * Ollama CLI           — https://ollama.com  (resolves installed model tags and
+#                            provides `ollama create` for baking num_ctx into new tags)
+#   * NVIDIA drivers       — provides `nvidia-smi`, used for automatic GPU VRAM
+#                            detection. Optional: on AMD / Apple Silicon / CPU-only,
+#                            pass `--vram-mib` or set `OLLAMA_CTX_VRAM_MIB`.
+#
+# Optional but recommended for a real GPU workstation: a CUDA-enabled Windows/Linux
+# install of Ollama so new tags actually run on the GPU.
