@@ -117,6 +117,9 @@ def recommend(layout, weight_bytes, vram_mib, overhead_gb, headroom_gb, dtype,
     recommended = _nice_ctx(max_ctx)
     if min_ctx and recommended < min_ctx:
         recommended = min_ctx
+    if max_ctx and recommended > max_ctx:
+        # The --min-ctx floor never overrides the hard VRAM ceiling.
+        recommended = max_ctx
 
     est_vram_gb = (weight_bytes + (kv_tok * recommended if kv_tok else 0) + reserved) / gb
     return {
@@ -240,9 +243,16 @@ def main(argv=None):
         except GGUFError as exc:
             print(f"! {target}: {exc}", file=sys.stderr)
             continue
-        layout = infer_layout(meta)
-        rec = recommend(layout, weight, vram_mib, args.overhead_gb, args.headroom_gb,
-                        args.dtype, args.min_ctx)
+        try:
+            layout = infer_layout(meta)
+            rec = recommend(layout, weight, vram_mib, args.overhead_gb, args.headroom_gb,
+                            args.dtype, args.min_ctx)
+        except GGUFError as exc:
+            print(f"! {target}: {exc}", file=sys.stderr)
+            continue
+        except TypeError as exc:
+            print(f"! {target}: could not infer KV geometry ({exc}); skipped", file=sys.stderr)
+            continue
         rows.append((target, layout, rec, gguf))
 
     if not rows:

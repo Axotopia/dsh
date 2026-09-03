@@ -182,7 +182,15 @@ def infer_layout(meta):
 
     block_count = g("block_count")
     head_count_kv = g("attention.head_count_kv")
-    key_length = g("attention.key_length") or g("attention.value_length") or g("attention.key_length_mla")
+    key_length = (g("attention.key_length") or g("attention.value_length")
+                  or g("attention.key_length_mla") or g("attention.head_dim"))
+    if key_length is None:
+        # Many GGUFs omit key/value length and only carry head_dim, or expect it
+        # derived from the embedding size and query-head count.
+        embedding_length = g("embedding_length")
+        head_count = g("attention.head_count")
+        if embedding_length and head_count:
+            key_length = embedding_length // head_count
     kv_lora_rank = g("attention.kv_lora_rank")
     sliding_window = g("attention.sliding_window")
     full_interval = g("full_attention_interval")
@@ -256,7 +264,15 @@ def kv_bytes_per_token(layout, dtype="f16"):
         rank = layout.get("kv_lora_rank") or layout["kv_head_dim"] or 0
         # compressed latent shared across heads; conservative estimate
         return layout["attn_layers"] * rank * 2 * per_elem
+    kv_heads = layout["kv_heads"] or 0
+    head_dim = layout["kv_head_dim"] or 0
+    if not kv_heads or not head_dim:
+        raise GGUFError(
+            f"unknown KV geometry for arch {layout.get('arch')!r} "
+            f"(kv_heads={kv_heads}, head_dim={head_dim}); pass the model tag "
+            f"explicitly or skip it"
+        )
     if kind == "sliding-window":
         global_layers = min(2, layout["attn_layers"])
-        return 2 * global_layers * layout["kv_heads"] * layout["kv_head_dim"] * per_elem
-    return 2 * layout["attn_layers"] * layout["kv_heads"] * layout["kv_head_dim"] * per_elem
+        return 2 * global_layers * kv_heads * head_dim * per_elem
+    return 2 * layout["attn_layers"] * kv_heads * head_dim * per_elem

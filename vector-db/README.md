@@ -29,6 +29,7 @@ Two facts drive why this helps:
 | `ollama_gguf.py` | Dependency-free GGUF metadata reader + architecture inference (weights never loaded). |
 | `requirements.txt` | Dependency notes (stdlib-only; lists system prerequisites). |
 | `examples/` | Sample Modelfiles showing the output format. |
+| `dsh-kb/` | **The DSH knowledge base itself**: worker CLI, host plugin, and `install.ps1`. |
 | `LICENSE` | MIT. |
 
 ---
@@ -54,8 +55,20 @@ Where it lives on disk (no need to touch it day-to-day):
 | `%USERPROFILE%\.dsh\kb\data\kb.db` | The SQLite database (the whole store is this one file) |
 | profile `cordis.patch.yml` | The `kb-vector-tools` row that mounts the tools into DSH |
 
-**Prerequisites:** Ollama running with an embedding model pulled (default `bge-m3`;
-`ollama pull bge-m3`). First-time setup normally happens once, in a DSH session.
+**Install (Windows, one command):**
+
+```powershell
+powershell -ExecutionPolicy Bypass -File .\dsh-kb\install.ps1
+```
+
+This copies the worker + plugin into `%USERPROFILE%\.dsh\kb`, installs the single
+npm dependency (`pdf-parse`), and prints the `cordis.patch.yml` row that mounts the
+tools into DSH. Custom target: `.\dsh-kb\install.ps1 -KbDir "D:\somewhere\kb"`;
+skip the npm step offline with `-NoDeps`.
+
+**Prerequisites:** Node.js ≥ 23 (24 LTS recommended — the store uses Node's built-in
+`node:sqlite`, no database install) and Ollama running with an embedding model pulled
+(default `bge-m3`; `ollama pull bge-m3`).
 
 ### Sample prompts — what's indexed?
 
