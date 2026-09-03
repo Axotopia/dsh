@@ -1,4 +1,4 @@
-# ollama-context-optimizer
+# vector-db
 
 Pick an Ollama `num_ctx` that actually fits your GPU's VRAM, and bake it into a new
 model tag — instead of guessing 4096/8192 or hitting an out-of-memory error on a big
@@ -38,16 +38,25 @@ Two facts drive why this helps:
 > **Zero-setup path — let DSH install it for you.** In any DSH session, just
 > point it at this repository — no target path, no manual steps:
 >
-> > "Install the `ollama-context-optimizer` package at
-> > https://github.com/Axotopia/dsh/tree/main/ollama-context-optimizer, and verify it
-> > runs — ask it to analyse a local model and show `num_ctx` recommendations (e.g. for
-> > `qwen3:8b`). Grant Full Access to the filesystem for this job."
+> > "Install the `vector-db` package at
+> > https://github.com/Axotopia/dsh/tree/main/vector-db, and verify it
+> > runs. **First check the prerequisites — if Python 3.9+ or the Ollama CLI is not
+> > installed, install it.** For Python: `winget install Python.Python.3.13` (or the
+> > official installer from https://python.org) and add it to PATH. For Ollama:
+> > `winget install Ollama.Ollama` (or download from https://ollama.com/download) and make
+> > sure the Ollama service is running. Then confirm `python --version` and
+> > `ollama --version`. Finally ask it to analyse a local model and show `num_ctx`
+> > recommendations (e.g. for `qwen3:8b`). Grant Full Access to the filesystem for this job."
 >
 > Notes: the package is a **Python CLI**, so the host needs **Python 3.9+** and the
-> **Ollama CLI** (plus NVIDIA drivers for automatic VRAM detection) — see the table
-> below. There's no `pip install` and no build step. Approve any prompts the agent
-> raises, and add missing provider/model keys in Settings → Models if a referenced model
-> isn't installed. Skip this path if you prefer the deterministic manual steps below.
+> **Ollama CLI**; the prompt above installs them if they are missing. There is **no
+> `pip install`** (the tool uses only the Python standard library) and no build step.
+> NVIDIA drivers are needed only for **automatic VRAM detection** (`nvidia-smi`) — that
+> one usually ships with your GPU driver rather than being installed by the agent; if it's
+> unavailable, pass `--vram-mib` or set `OLLAMA_CTX_VRAM_MIB` instead. Approve any prompts
+> the agent raises, and add missing provider/model keys in Settings → Models if a
+> referenced model isn't installed. Skip this path if you prefer the deterministic manual
+> steps below.
 
 **No `pip install` needed** — the tool is Python 3.9+ standard library only.
 
@@ -67,7 +76,7 @@ Clone the repo (or just copy this folder) and step into it:
 
 ```bash
 git clone https://github.com/Axotopia/dsh.git
-cd dsh/ollama-context-optimizer
+cd dsh/vector-db
 ```
 
 ---
