@@ -11,6 +11,9 @@ modelfiles/
 _out/
 output/
 
+# Node (dsh-kb worker dependency installed by install.ps1)
+dsh-kb/tools/node_modules/
+
 # OS / editor
 .DS_Store
 Thumbs.db

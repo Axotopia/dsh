@@ -1,0 +1,10 @@
+{
+  "name": "kb-worker",
+  "version": "0.1.0",
+  "private": true,
+  "description": "DSH knowledge-base worker: parse, chunk, embed (Ollama), store (SQLite), hybrid search.",
+  "type": "commonjs",
+  "dependencies": {
+    "pdf-parse": "^1.1.1"
+  }
+}
