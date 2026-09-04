@@ -169,28 +169,80 @@ preview-first, and the tool refuses to run without at least one filter.
 
 ## Install / prerequisites
 
-> **Zero-setup path — let DSH install it for you.** In any DSH session, just
-> point it at this repository — no target path, no manual steps:
+> **Zero-setup path — let DSH install it for you.** In any DSH session, paste the
+> prompt below. It installs **both** halves of this folder — the `num_ctx` Python
+> CLI *and* the `dsh-kb` knowledge base — and finishes with an end-to-end smoke
+> test, because "it runs" is only proven once a document can be ingested, embedded,
+> searched, and removed again:
 >
 > > "Install the `vector-db` package at
-> > https://github.com/Axotopia/dsh/tree/main/vector-db, and verify it
-> > runs. **First check the prerequisites — if Python 3.9+ or the Ollama CLI is not
-> > installed, install it.** For Python: `winget install Python.Python.3.13` (or the
-> > official installer from https://python.org) and add it to PATH. For Ollama:
-> > `winget install Ollama.Ollama` (or download from https://ollama.com/download) and make
-> > sure the Ollama service is running. Then confirm `python --version` and
-> > `ollama --version`. Finally ask it to analyse a local model and show `num_ctx`
-> > recommendations (e.g. for `qwen3:8b`). Grant Full Access to the filesystem for this job."
+> > https://github.com/Axotopia/dsh/tree/main/vector-db (or the local checkout you
+> > already have) and verify it works end to end. It is **not a pip package**:
+> > 'install' means fetching the folder to a stable path, then setting up and
+> > verifying **both** parts below. Grant Full Access to the filesystem for this job.
+> >
+> > **1. Prerequisites — check first; install only what is missing:**
+> > - Python 3.9+ (`python --version`); else `winget install Python.Python.3.13`
+> >   (or the official installer from python.org) and refresh PATH.
+> > - Ollama CLI **and a running service** (`ollama --version`, `ollama list`);
+> >   else `winget install Ollama.Ollama` (or https://ollama.com/download) and start it.
+> > - Node.js ≥ 23 (`node --version`) — required by the knowledge-base worker
+> >   (`node:sqlite`); else install the 24 LTS from https://nodejs.org.
+> > - Pull any model you will analyse if it is not installed locally
+> >   (e.g. `ollama pull qwen3:8b`).
+> >
+> > **2. Part A — `num_ctx` optimizer CLI (stdlib-only, no build step):** from the
+> > folder run `python optimize_num_ctx.py <local-model> --info-only` (e.g.
+> > `qwen3:8b`) and show the recommendation table (VRAM, KV/token, architecture kind,
+> > native ctx, recommended ctx). If `nvidia-smi` is unavailable, pass `--vram-mib`
+> > or set `OLLAMA_CTX_VRAM_MIB`.
+> >
+> > **3. Part B — `dsh-kb` knowledge base (the half most installs skip):**
+> > - Run the installer: `powershell -ExecutionPolicy Bypass -File .\dsh-kb\install.ps1`
+> >   (copies worker + plugin to `%USERPROFILE%\.dsh\kb` and installs the `pdf-parse`
+> >   dependency).
+> > - Make sure the embedding model is present and working: `ollama pull bge-m3`, then
+> >   POST to http://127.0.0.1:11434/api/embed with `bge-m3` and confirm 1024-dim output.
+> > - Mount the plugin into the **active** DSH profile — do **not** assume the docs'
+> >   default `web` profile. Detect which profile the running host uses (e.g. read
+> >   `profile-selection\state.json` under the app's userData — on this machine it is
+> >   `desktop`), then append this insert to **that** profile's `cordis.patch.yml` and
+> >   YAML-validate the file:
+> >
+> >   ```
+> >   - insert:
+> >       - id: kb-vector-tools
+> >         name: 'C:\Users\<you>\.dsh\kb\kb-plugin.mjs'
+> >   ```
+> >
+> >   The `kb_*` tools register on the next profile reload/restart; the worker is
+> >   verifiable immediately, independent of the host:
+> >   `node %USERPROFILE%\.dsh\kb\tools\kb.mjs status`.
+> >
+> > **4. Final verification — smoke test (must pass before you report done):**
+> > - Write a small throwaway `.md` containing one rare keyword (e.g.
+> >   `zorblatt protocol quokka`) and one paraphrase-able rule sentence.
+> > - Ingest it into a throwaway collection, then confirm it is stored:
+> >   `node %USERPROFILE%\.dsh\kb\tools\kb.mjs ingest --collection smoke --path <file>`,
+> >   then `... kb.mjs status` (expect 1 active doc/chunk, model bge-m3, no errors).
+> > - Search the rare keyword **and** a paraphrased question; each must return the
+> >   document with **both** `semantic:<collection>` and `keyword` in `channels`
+> >   (proves hybrid retrieval + bge-m3 embeddings work end to end).
+> > - Clean up: `... kb.mjs forget --collection smoke --yes --purge`, delete the temp
+> >   file, and confirm `... kb.mjs status` shows 0 documents and no errors.
+> > - Report the Part A recommendation table, the KB health, and the smoke-test result."
 >
-> Notes: the package is a **Python CLI**, so the host needs **Python 3.9+** and the
-> **Ollama CLI**; the prompt above installs them if they are missing. There is **no
-> `pip install`** (the tool uses only the Python standard library) and no build step.
-> NVIDIA drivers are needed only for **automatic VRAM detection** (`nvidia-smi`) — that
-> one usually ships with your GPU driver rather than being installed by the agent; if it's
-> unavailable, pass `--vram-mib` or set `OLLAMA_CTX_VRAM_MIB` instead. Approve any prompts
-> the agent raises, and add missing provider/model keys in Settings → Models if a
-> referenced model isn't installed. Skip this path if you prefer the deterministic manual
-> steps below.
+> Notes: this folder has **two components** — a **Python CLI** (needs Python 3.9+
+> and the **Ollama CLI**; no `pip install`, stdlib only, no build step) and the
+> **`dsh-kb`** knowledge base (needs **Node ≥ 23**, Ollama running with the `bge-m3`
+> embedding model pulled, and a mount row in the **active** profile's
+> `cordis.patch.yml`). Earlier versions of this prompt covered only the CLI, so the
+> install could look finished while the KB was never mounted — the smoke test above
+> is the mandatory final proof. NVIDIA drivers are needed only for **automatic VRAM
+> detection** (`nvidia-smi`); without them pass `--vram-mib` or set
+> `OLLAMA_CTX_VRAM_MIB`. Approve any prompts the agent raises, and add missing
+> provider/model keys in Settings → Models if a referenced model isn't installed.
+> Skip this path if you prefer the deterministic manual steps below.
 
 **No `pip install` needed** — the tool is Python 3.9+ standard library only.
 
