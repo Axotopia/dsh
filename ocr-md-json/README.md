@@ -38,6 +38,41 @@ local Ollama model ladder through a runner script.
 
 ## Install
 
+**Zero-path install prompt - paste into any DSH session.** No paths to type and
+nothing to download: the prompt below carries the source path and every step.
+It installs this preset from your local checkout of the repository into DSH's
+per-user preset root and verifies it mounts:
+
+> > Install the `ocr-md-json` agent preset at
+> > `C:\Users\desig\Documents\GitHub\dsh\ocr-md-json` (a local checkout of
+> > https://github.com/Axotopia/dsh) and verify it mounts. It is **not** a pip
+> > package: 'install' means copying the package folder into
+> > `%USERPROFILE%\.dsh\.agent-presets\ocr-md-json` (DSH's per-user preset root -
+> > the only location presets are scanned from), then checking the prerequisites
+> > below. Grant Full Access to the filesystem for this job (the preset lands
+> > outside the session workspace).
+> >
+> > 1. Prerequisites - check first; install only what is missing:
+> >    - Python launcher `py` (`py --version`) - every helper script runs through
+> >      it; else install Python 3.x from https://python.org.
+> >    - Pillow (`py -c "import PIL"`) - needed only by `extract_pdf_images.py`
+> >      for PNG page-image output; else `py -m pip install --user Pillow`.
+> >    - The helper scripts are otherwise standard-library only (`zlib`, `re`,
+> >      `hashlib`) - no pypdf, no OCR engine, no cloud key.
+> > 2. Copy the package from the local checkout:
+> >    `Copy-Item -Recurse "C:\Users\desig\Documents\GitHub\dsh\ocr-md-json" "$env:USERPROFILE\.dsh\.agent-presets\"`.
+> > 3. Verify it mounts: the preset directory must sit at
+> >    `%USERPROFILE%\.dsh\.agent-presets\ocr-md-json` with `agent.cordis.yml`
+> >    and `preset.yml` (display name **OCR-MD-JSON**); DSH scans that root live,
+> >    so the preset picker should offer OCR-MD-JSON on next open.
+> > 4. Smoke-check a helper script end to end (run `py` on `dedupe.py` against
+> >    the package's own `scripts` folder) and report the run.
+> >
+> > Report the exact installed path, the prerequisite status, and the
+> > smoke-check result.
+
+Manual (deterministic) equivalent - run from the package root:
+
 ```
 Copy-Item -Recurse ocr-md-json "$env:USERPROFILE\.dsh\.agent-presets\"
 ```
