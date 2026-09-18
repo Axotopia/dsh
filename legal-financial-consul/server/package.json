@@ -1,0 +1,21 @@
+{
+  "name": "research-browser-mcp-server",
+  "version": "1.0.0",
+  "private": true,
+  "description": "ATTACH-only MCP stdio server: real-browser research tools over the Chrome DevTools Protocol (connectOverCDP to 127.0.0.1:9222). Never launches a browser.",
+  "main": "./server.js",
+  "bin": {
+    "research-browser": "./server.js"
+  },
+  "type": "module",
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.17.0",
+    "puppeteer-core": "^24.10.0"
+  }
+}

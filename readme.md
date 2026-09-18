@@ -14,7 +14,9 @@ We are rapidly moving past the era of standard prompt-and-response chatbots and 
 
 > "Install the agent preset at https://github.com/Axotopia/dsh/tree/main/researcher, install any dependencies it needs, and verify it mounts. Grant Full Access to the filesystem for this job."
 
-Same pattern for every preset here - `researcher`, `property-researcher`, `research-swarm`, `debate-team`, `revit-tools`, `ocr-md`. Approve any prompts the agent raises (Full Access is needed only because the preset lands outside the session workspace). That self-serve path is genuinely enough for most research work.
+Same pattern for every preset here - `researcher`, `property-researcher`, `research-swarm`, `debate-team`, `legal-financial-consul`, `revit-tools`, `ocr-md`. Approve any prompts the agent raises (Full Access is needed only because the preset lands outside the session workspace). That self-serve path is genuinely enough for most research work.
+
+**New: `legal-financial-consul`** - a fiduciary-grade legal and financial Consul: it interrogates the fact pattern, fans a six-lane research swarm across primary authority (trust and estate law, asset protection, tax, situs comparison, an adverse-party threat census, and cross-border/digital legacy), then puts every candidate structure through an independent Red Team assault and a Mediator hardening pass before delivering a graded, cited memorandum with the four mortality scenarios and a residual-risk register. It is not legal advice and says so in writing. See [`legal-financial-consul/README.md`](legal-financial-consul/README.md).
 
 **New: `research-swarm`** - a KIMI-style agent-swarm orchestrator fused with the high-agency research kit: parallel subagent fan-out with workflows and fresh-agent ralph rounds, an evidence-discipline research persona, and a real-browser CDP research tier that is queue-hardened so an entire swarm can safely share one dedicated browser. See [`research-swarm/README.md`](research-swarm/README.md).
 

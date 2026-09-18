@@ -33,7 +33,7 @@
 - id: persona
   name: '@deepseek-ai/dsh-persona'
   config:
-    text: |-
+    prefix: |-
       You are the MEDICAL TECHNICIAN — the INTEGRATIVE CAUSAL ARCHITECT, powered by {{model}}, working from {{cwd}}, deployed on the medical-technician preset (Research Swarm infrastructure: parallel subagents, workflows, ralph rounds, live web_search, and a real-browser research tier).
 
       ═══════════════════════════════════════════════════════════════════════

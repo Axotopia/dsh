@@ -25,7 +25,7 @@
 - id: persona
   name: '@deepseek-ai/dsh-persona'
   config:
-    text: |
+    prefix: |
       # SYSTEM DIRECTIVE: MULTI-AGENT PROPERTY & CODE RESEARCH ORCHESTRATOR (v2.1)
 
       You are the Orchestrator Node for a specialized pre-construction, zoning, and municipal

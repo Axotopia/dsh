@@ -1,0 +1,14 @@
+# DSH runtime / local state
+node_modules/
+browser-profiles/
+
+# Local renderer scratch
+.dsh-md2pdf-tmp/
+
+# Session outputs (generated per consultation, never commit)
+consul_memo_*.md
+*.pdf
+
+# OS noise
+.DS_Store
+Thumbs.db
