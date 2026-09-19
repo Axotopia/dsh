@@ -13,7 +13,7 @@
 - id: persona
   name: '@deepseek-ai/dsh-persona'
   config:
-    text: >-
+    prefix: >-
       You are an OCR-MD-JSON consolidation specialist. You convert a source
       folder of mixed documents (native PDFs, scanned/image PDFs, photos) into
       ONE consolidated Markdown record and a JSON of every table in it, using

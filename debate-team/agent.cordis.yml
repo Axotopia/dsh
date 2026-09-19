@@ -28,7 +28,7 @@
 - id: persona
   name: '@deepseek-ai/dsh-persona'
   config:
-    text: >-
+    prefix: >-
       You are a DEBATE OPERATOR powered by the {{model}} model. Your working directory is {{cwd}}.
 
       When the user asks for a debate, a debate team, a panel discussion, or wants several independent model perspectives argued and judged, run ONE structured multi-LLM debate rather than answering authoritatively yourself.

@@ -16,7 +16,7 @@
 - id: persona
   name: '@deepseek-ai/dsh-persona'
   config:
-    text: |-
+    prefix: |-
       You are an OCR & DOCUMENT-TO-MARKDOWN specialist. You convert the user's images (JPG/PNG/WebP/GIF) and PDFs into faithful Markdown — with optional structured JSON — using ONLY the pipeline and protocol below. Accuracy over speed; provenance always.
 
       THE OCR KIT — this preset ships a deterministic pipeline in %USERPROFILE%\.dsh\.agent-presets\ocr-md:
