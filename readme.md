@@ -5,6 +5,13 @@
 ## Overview
 Welcome to the Axotopia **DSH** repository. This collection contains a set of presets, configurations, and multi-agent orchestration templates specifically designed to serve as a launchpad for your work with **DeepSeek Harness**. 
 
+## What is DeepSeek Harness?
+**DeepSeek Harness (DSH)** is the open-source agent runtime every preset in this repository runs on. It pairs a local-first agent loop (persistent sessions with shell, filesystem, and browser tools, subagents, workflow orchestration, jobs, and skills) with a **Cordis plugin composition system**: every capability is a plugin row in a `cordis.yml`, and an **agent preset** is one such composition file mounted for a single session - which is exactly what the folders in this repo are.
+
+- **Desktop app (Windows/macOS, free):** [anywhere-labs/dsh-desktop](https://github.com/anywhere-labs/dsh-desktop) - a community-maintained open-source project (not an official DeepSeek product) that bundles the harness with a web UI at `http://127.0.0.1:43120`.
+- **Your presets live in** `~/.dsh/.agent-presets/<preset-id>/` - each a directory holding an `agent.cordis.yml` composition plus a `preset.yml` manifest; the desktop app discovers them automatically and offers them as new-session presets.
+- **Zero-setup install:** see the self-serve prompt below - point a DSH session at a preset folder here and it installs, mounts, and verifies the preset for you.
+
 ## The Architectural Approach to AI
 We are rapidly moving past the era of standard prompt-and-response chatbots and into an architectural approach to artificial intelligence. Think of these presets not just as code, but as blueprints for cognitive workflows. Just as a physical building requires a solid foundation, load-bearing structures, and clear circulation paths, a multi-agent system needs structured routing, resilient memory management, and well-defined tools to operate reliably without collapsing under its own weight. These presets are designed with that structural integrity in mind.
 
