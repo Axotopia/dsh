@@ -1,0 +1,285 @@
+# The `vacation-planner` agent preset: a gourmet travel planner.
+#
+# Copied from the shipped `standard` composition, then re-aimed: the persona and
+# plan-mode section now serve food-first trip planning (where to stay, eat, and
+# visit; events; reservations; flights and trains), and the preset bundles its
+# own `gourmet-travel-method` skill beside the composition. Every tool row is
+# the full `standard` toolset — web research and fetch, filesystem for itinerary
+# files, background jobs, skills, goals, delegation, and workflows — because
+# research, not coding, is this agent's workload.
+#
+# This file is an AGENT-PLANE composition. The roster mounts it ONCE under a
+# standing scope; every session naming it joins by scope parentage, so the
+# tools and prompt sections registered here cover each joined agent while a
+# session's own state stays keyed per Session/Agent inside the plugins. The
+# host composition (`base.cordis.yml` + `web.cordis.yml`) keeps everything a
+# preset must not own: the registries themselves, the sandbox and approval
+# stack, persistence, and the model route.
+#
+# A service row here MUST sit inside a group carrying an `isolate` realm.
+# Without one it publishes into the root realm, where it is process-global —
+# another preset publishing the same name collides, and a host reader would
+# resolve one preset's instance for every session; `dsh-agent-presets` rejects
+# that at mount. `true` means an entry-local realm: this standing mount's own
+# private instance, apart from every other preset's. (A shared label does NOT
+# pool instances — `provide()` throws on the second registration under the
+# same realm symbol; labels join REALMS, and are not what this file needs.)
+
+# ── identity ────────────────────────────────────────────────────────────────
+
+# The preset's own persona, shadowing the deployment default for this agent.
+# `{{model}}` and `{{cwd}}` resolve from the agent's own route and workspace.
+# No other `{{…}}` group may appear: template variables resolve strictly.
+- id: persona
+  name: '@deepseek-ai/dsh-persona'
+  config:
+    suffix: |-
+      Your working directory is {{cwd}}. Save every trip deliverable there as Markdown files and present them when complete.
+    prefix: |-
+      You are a vacation planner powered by the {{model}} model, running on the DeepSeek Harness.
+
+      You design trips for serious foodies — people who travel to eat. They plan around tasting menus and new openings, care about museums, markets, and what is actually on in town, and are equally happy at a two-star counter or a well-sited campsite. Luxury dining is the treat; camping is never a downgrade. You identify where to stay, eat, drink, and visit; you align the plan with local events and exhibitions; and you work out the flights, trains, and transfers that hold it together.
+
+      Load the `gourmet-travel-method` skill before your first planning step of any trip. It carries the taste-source hierarchy (Eater, Michelin, and local critics first; Yelp and TripAdvisor demoted to logistics-only), reservation-platform mechanics and drop times, event-calendar practice, flight and train booking horizons, pacing rules, and the itinerary file format.
+
+      How you work, in brief:
+      1. Frame before researching: dates, party, budget shape, dietary restrictions, lodging appetite (design hotel to camping), splurge cadence. Ask only what the traveler owns — dates, money, appetite; research the rest.
+      2. Anchor meals first — the one or two tables worth building a day around — then museums and events, then the coffee/bakery/cocktail layer and neighborhoods. Lock anchors before transport.
+      3. Research, do not recall: verify every venue on its own site or an authoritative editorial source; put event calendars, museum exhibitions, market days, and closure days on one timeline before fixing any dinner; treat crowd-review aggregates as taste-silent.
+      4. Logistics hold it up: flight and train booking windows, airport-to-city transfer buffers (no fixed reservation on arrival day without a 3-hour buffer), inter-city legs, geographic clustering on a map, and map links for the traveler.
+      5. Deliver a workspace file: a day-by-day itinerary with a booking checklist (platform, drop date, cancellation deadline), a fallback for every anchor, per-day budget mix, and a verification log date-stamping each fact you checked. Present it.
+
+      Delegation is your friend on multi-city or candidate-heavy trips: fan venue, event, and transit research out to subagents or workflows, but keep taste judgments and the final itinerary in your own hands.
+
+- id: agent-instructions
+  name: '@deepseek-ai/dsh-agent-instructions'
+  config:
+    maxBytes: 65536
+
+# ── shell ───────────────────────────────────────────────────────────────────
+
+# Kept from `standard`: useful for data wrangling (currency/timezone math,
+# CSV exports of the booking checklist). `shell-env` stays in the HOST
+# composition. Both shell tools consume the host registry from here; their
+# executors (`bash-sandbox`/`pwsh-sandbox`) are host-plane too.
+- id: tool-bash
+  name: '@deepseek-ai/dsh-tool-bash'
+  disabled: !!js process.platform === 'win32'
+
+- id: tool-pwsh
+  name: '@deepseek-ai/dsh-tool-pwsh'
+  disabled: !!js process.platform !== 'win32'
+
+# ── filesystem ──────────────────────────────────────────────────────────────
+
+# Both register into the host `tools` registry and provide nothing, so
+# they need no realm. The `fs` service and its policy stay in the host.
+# Itinerary files, booking checklists, and research notes live here.
+- id: tool-fs
+  name: '@deepseek-ai/dsh-tool-fs'
+
+- id: tool-fs-search
+  name: '@deepseek-ai/dsh-tool-fs-search'
+  config:
+    sampleOverCapGlobResults: false
+
+# ── background jobs ────────────────────────────────────────────────────────
+
+# Only the model-facing controls. The task REGISTRY stays on the host plane.
+# Long searches (fare monitoring, drop-time checks) run in the background.
+- id: tool-jobs
+  name: '@deepseek-ai/dsh-tool-jobs'
+
+# ── skills ──────────────────────────────────────────────────────────────────
+
+# The skill REGISTRY lives in the host composition and is layered per scope.
+# `skill-filesystem` contributes local-root discovery for agents on this
+# preset PLUS this preset's own bundled skill directory (`skills/` beside this
+# file — `baseUrl` is the preset's own directory, so it resolves wherever the
+# preset is installed), and `tool-skill` gives the agent the catalog and
+# loader. The merged catalog also carries whatever the deployment registered
+# globally (repository plugins).
+- id: skill-filesystem
+  name: '@deepseek-ai/dsh-skill-filesystem'
+  config:
+    customSkillDirs:
+      - !!js "process.getBuiltinModule('node:url').fileURLToPath(new URL('skills/', baseUrl))"
+
+- id: tool-skill
+  name: '@deepseek-ai/dsh-tool-skill'
+
+# ── goals ───────────────────────────────────────────────────────────────────
+
+# The goal service and session driver stay on the host plane, where the Gateway
+# can resolve them. Trips are long-running objectives — monitoring fares and
+# reservation drops across days — so goal rounds fit this agent.
+- id: command-goal
+  name: '@deepseek-ai/dsh-command-goal'
+
+- id: tool-goal
+  name: '@deepseek-ai/dsh-tool-goal'
+
+# ── plan mode ───────────────────────────────────────────────────────────────
+
+# Plan state is per-agent by nature, so an entry-local realm is not a
+# workaround here — it is the correct lifetime. The section below is the
+# `standard` plan-mode contract re-aimed at itinerary planning: web research
+# IS the non-mutating exploration; booking, purchasing, and writing files are
+# execution.
+- id: planning
+  name: cordis:group
+  group: true
+  isolate:
+    planMode: true
+  config:
+    - id: plan-mode
+      name: '@deepseek-ai/dsh-plan-mode'
+      config:
+        section: |-
+          You are in plan mode. Stay in plan mode until exit_plan_mode succeeds or the user switches the session mode. Imperative language to carry out the trip means plan the itinerary, not execute it: do not book, reserve, purchase tickets, contact venues, or write trip files. A user's conversational agreement — including an answer confirming something you asked — approves nothing and does not end plan mode; fold the confirmed decision into the plan and submit it through exit_plan_mode.
+
+          Explore first. Web research is your non-mutating read: verify venues against editorial and official sources, check event and exhibition calendars for the dates, confirm transit options and booking windows, and ground the plan in what is actually bookable. Do not write itinerary files, create reservations, purchase anything, or otherwise carry out the plan.
+
+          The tool catalog stays the same across modes for request-cache stability. These plan-mode rules override any later tool description or guidance that suggests using mutation tools; those tools remain listed to keep the tool catalog unchanged. Do not use todo_write to track this planning phase: it tracks execution after an approved plan, while the plan itself belongs in exit_plan_mode.
+
+          Resolve discoverable facts by research. Use ask_user_question only for traveler-owned choices or material ambiguity research cannot answer (dates, budget, dietary restrictions, splurge appetite, camping-vs-hotel). Do not ask the traveler what the Michelin site, the museum calendar, or the operator's booking engine can tell you.
+
+          Make the plan decision-complete: trip framing and success criteria; day-by-day anchors with neighborhoods; lodging strategy including any camping legs; inter-city transport with booking windows; the booking checklist with platforms and drop/cancellation dates; fallbacks for every anchor; budget mix; and explicit assumptions. Concise enough to review, detailed enough to execute without new decisions.
+
+          When ready, call exit_plan_mode with the complete plan markdown, starting with a # title. Make exit_plan_mode the only and final tool call in that assistant response: it presents the plan for approval, and execution begins only in a later step after approval. Do not paste the final plan as a plain reply or ask "should I proceed?" through prose or ask_user_question. If review rejects it, incorporate the feedback and present again. If the review channel is unavailable or aborted, stay in plan mode and ask the user to switch modes manually; do not proceed with execution.
+
+# ── compaction ──────────────────────────────────────────────────────────────
+
+# `compaction-basic` reads `toolResultPrune` through `ctx.get`, so the pruner must
+# share this realm rather than sit outside it.
+#
+# `tokenMeter` is deliberately NOT in this realm: the meter stays on the HOST
+# plane, and the rows here resolve that one instance.
+- id: compaction
+  name: cordis:group
+  group: true
+  isolate:
+    compaction: true
+    toolResultPruner: true
+  config:
+    - id: compaction-basic
+      name: '@deepseek-ai/dsh-compaction-basic'
+
+    - id: command-compact
+      name: '@deepseek-ai/dsh-command-compact'
+
+    - id: tool-result-pruner
+      name: '@deepseek-ai/dsh-compaction-tool-result-pruner'
+      config:
+        thresholdChars: 8192
+        headChars: 4096
+        tailChars: 1024
+
+# ── delegation and workflows ────────────────────────────────────────────────
+
+# The `subagents` registry and its spawn/fork backends live in the HOST
+# composition: the registry is a process singleton whose cross-session queries
+# the api-proxy serves to the browser, and a provider name may only be
+# registered once. This preset contributes the delegation TOOLS, which resolve
+# that host registry.
+#
+# `workflows` is different — nothing outside an agent reads it — so every row
+# that reaches it shares one entry-local realm here, and a consumer left
+# outside would resolve a host registry this preset does not populate.
+- id: delegation
+  name: cordis:group
+  group: true
+  isolate:
+    workflowEngine: true
+  config:
+    - id: tool-subagent-control
+      name: '@deepseek-ai/dsh-tool-subagent-control'
+
+    - id: tool-subagent-list-agents
+      name: '@deepseek-ai/dsh-tool-subagent-control/list-agents'
+
+    - id: tool-subagent
+      name: '@deepseek-ai/dsh-tool-subagent'
+      config:
+        provider: spawn
+        toolName: subagent
+        modelSelectionSettings: true
+        backgroundMode: continuable
+
+    # Fork omits model selection so provider/model stay equal to the parent and
+    # the inherited history remains eligible for KV Cache reuse.
+    - id: tool-subagent-fork
+      name: '@deepseek-ai/dsh-tool-subagent'
+      config:
+        provider: fork
+        toolName: subagent_fork
+        backgroundMode: continuable
+
+    # Production dsh does not install these optional providers. Install the
+    # matching Bundle in this Profile and restart the Host, then remove
+    # `disabled` from the matching tool row. Host availability alone grants
+    # no tool.
+    - id: tool-subagent-codex
+      name: '@deepseek-ai/dsh-tool-subagent'
+      disabled: true
+      config:
+        provider: codex
+        toolName: subagent_codex
+        backgroundMode: one-shot
+        maxDepth: provider-managed
+
+    - id: tool-subagent-claude-code
+      name: '@deepseek-ai/dsh-tool-subagent'
+      disabled: true
+      config:
+        provider: claude-code
+        toolName: subagent_claude_code
+        backgroundMode: one-shot
+        maxDepth: provider-managed
+
+    - id: workflow-worker-thread
+      name: '@deepseek-ai/dsh-workflow-worker-thread'
+      config:
+        provider: spawn
+
+    - id: tool-workflow
+      name: '@deepseek-ai/dsh-tool-workflow'
+
+    - id: tool-ralph
+      name: '@deepseek-ai/dsh-tool-ralph'
+      config:
+        subagentProvider: spawn
+        maxRounds: 64
+
+# ── remaining model-facing rows ─────────────────────────────────────────────
+
+# Clarifying a trip needs traveler-owned facts only: dates, budget, dietary,
+# appetite. Everything else is research.
+- id: tool-ask-user
+  name: '@deepseek-ai/dsh-tool-ask-user'
+
+- id: tool-todo
+  name: '@deepseek-ai/dsh-tool-todo'
+  config:
+    allowParallelInProgress: true
+
+# A clock for the reservation calendar: "today" against drop dates, event
+# calendars, and "what is open this week". One durable reading with timestamp,
+# browser zone, and elapsed time; the refresh interval keeps readings out of
+# every step. Publishes no service, so it sits loose.
+- id: time-context
+  name: '@deepseek-ai/dsh-time-context'
+  config:
+    refreshIntervalMs: 900000
+
+# The `web` service and its search provider stay in the host composition; only
+# the model-facing tool is per-session. Search + fetch ARE this agent's maps,
+# restaurant guides, event calendars, and booking engines.
+- id: tool-web
+  name: '@deepseek-ai/dsh-tool-web'
+  config:
+    fetch: true
+    searchTimeoutMs: 60000
+
+- id: present
+  name: '@deepseek-ai/dsh-tool-present'
