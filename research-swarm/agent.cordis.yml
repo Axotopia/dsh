@@ -309,7 +309,7 @@
     # LOADING user's profile at composition time via !!js, same mechanism the
     # researcher-browser preset uses. Forward slashes are valid for Node cwd.
     command: 'node'
-    cwd: !!js process.env.USERPROFILE + '/.dsh/.agent-presets/research-swarm/server'
+    cwd: !!js (process.env.USERPROFILE || process.env.HOME) + '/.dsh/.agent-presets/research-swarm/server'
     args:
       - 'server.js'
     toolCallTimeoutMs: 120000

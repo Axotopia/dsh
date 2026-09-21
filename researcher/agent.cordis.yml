@@ -296,7 +296,7 @@
     # per-user preset root), so the server cwd is derived from the LOADING
     # user's profile at composition time — same !!js mechanism the shipped
     # preset uses for process.platform. Forward slashes are valid for Node cwd.
-    cwd: !!js process.env.USERPROFILE + '/.dsh/.agent-presets/researcher-browser/server'
+    cwd: !!js (process.env.USERPROFILE || process.env.HOME) + '/.dsh/.agent-presets/researcher-browser/server'
     args:
       - 'server.js'
     toolCallTimeoutMs: 120000

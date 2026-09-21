@@ -715,7 +715,7 @@
     serverName: research-browser-pr
     transport: stdio
     command: 'node'
-    cwd: !!js process.env.USERPROFILE + '/.dsh/.agent-presets/property-researcher/server'
+    cwd: !!js (process.env.USERPROFILE || process.env.HOME) + '/.dsh/.agent-presets/property-researcher/server'
     args:
       - 'server.js'
     toolCallTimeoutMs: 120000

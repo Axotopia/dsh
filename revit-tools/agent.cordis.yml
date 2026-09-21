@@ -269,7 +269,7 @@
     # Portability: copy the whole folder, then fix command (any CPython)
     # and the exe path in args below.
     command: 'python'
-    cwd: 'C:\Users\desig\.dsh\.agent-presets\revit-tools'
+    cwd: !!js (process.env.USERPROFILE || process.env.HOME) + '/.dsh/.agent-presets/revit-tools'
     args:
       - 'axo_mcp_server.py'
       - 'C:\Program Files\Autodesk\Revit 2027 MCP Server Read-Tools Technical Preview\Autodesk.RevitMcpServer.Stdio.exe'

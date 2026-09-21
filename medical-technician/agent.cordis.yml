@@ -925,7 +925,7 @@
     # profile at composition time via !!js, same mechanism the researcher-browser
     # preset uses. Forward slashes are valid for Node cwd.
     command: 'node'
-    cwd: !!js process.env.USERPROFILE + '/.dsh/.agent-presets/medical-technician/server'
+    cwd: !!js (process.env.USERPROFILE || process.env.HOME) + '/.dsh/.agent-presets/medical-technician/server'
     args:
       - 'server.js'
     toolCallTimeoutMs: 120000

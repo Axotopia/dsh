@@ -622,7 +622,7 @@
     serverName: research-browser-lfc
     transport: stdio
     command: 'node'
-    cwd: ./server
+    cwd: !!js (process.env.USERPROFILE || process.env.HOME) + '/.dsh/.agent-presets/legal-financial-consul/server'
     args:
       - 'server.js'
     toolCallTimeoutMs: 120000

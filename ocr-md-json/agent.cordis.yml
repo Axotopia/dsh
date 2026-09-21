@@ -21,7 +21,9 @@
       always. Never guess a value you cannot read.
 
       THE KIT — this preset ships generic helper scripts (see
-      %USERPROFILE%\.dsh\.agent-presets\ocr-md-json\scripts):
+      `~/.dsh/.agent-presets/ocr-md-json/scripts`, or on Windows
+      `%USERPROFILE%\.dsh\.agent-presets\ocr-md-json\scripts`; run them with
+      `python3` on Linux/macOS and `py` on Windows):
       - extract_pdf_text.py  — native PDFs: extract the embedded text layer
         (zlib decompress the content streams + map glyph codes through each
         font's ToUnicode CMap). This is TEXT EXTRACTION, not OCR: lossless,

@@ -36,6 +36,46 @@ Same pattern for every preset here - `researcher`, `property-researcher`, `resea
 **Bring us in.** For firms that need it customized - your jurisdictions, your data sources, your compliance rails, an audit panel built for your exact workflow - that's what Axoworks does. We're an architecture/engineering consultancy that ships these systems, not a vendor pushing a subscription. Tell us the research problem; we'll tell you whether a preset solves it or whether you need something bespoke.
 
 > These presets are provided strictly as **proof of concept** models, not drop-in production solutions. Review the composition (`agent.cordis.yml`), routing, system prompts, and tool integrations, and adapt them to your data, hardware, and use cases.
+## Changelog
+
+### 2026-09-21 — the browser tier now starts off Windows
+
+The browser presets were Windows-first: their MCP rows derived the server's
+working directory from `process.env.USERPROFILE`, which is unset on Linux and
+macOS. `dsh-mcp-client` passes that `cwd` straight to `spawn`, so the server
+could not start and the client **dropped it silently** — the preset composed and
+looked healthy, but its `mcp__*__*` browser tools were simply absent, with no
+error raised anywhere.
+
+- **MCP `cwd`** in `researcher`, `research-swarm`, `medical-technician` and
+  `property-researcher` now resolves
+  `(process.env.USERPROFILE || process.env.HOME)`, which is correct on every
+  platform.
+- **`legal-financial-consul`** used `cwd: ./server`. Node resolves a relative
+  `cwd` against the *process* working directory, not the preset folder, so that
+  server could not start either; it now uses the same home-derived path.
+- **`revit-tools`** carried a hardcoded `C:\Users\desig\...` path — a per-machine
+  placeholder. It is now home-derived. The preset still requires Autodesk Revit.
+- **`launch-browser.sh`** now ships beside `launch-browser.cmd` in all five
+  browser-tier presets, and `server/server.js` selects the launcher by platform.
+  Windows behaviour is unchanged: it still goes through `cmd.exe` with
+  `launch-browser.cmd`. The "run the launcher yourself" message names the right
+  file for the platform.
+- **`ocr-md-json`** now names both platforms' script locations and the correct
+  interpreter (`python3` on Linux/macOS, `py` on Windows).
+
+Verified with a row-config validator that runs every row's `config` through the
+`Config` schema its own plugin exports, interpolating `!!js` exactly as the
+Loader does: every row config in every preset validates. Preset *discovery*
+cannot catch this class of defect — it validates YAML shape and module
+resolution, never `config` — which is why a silently-absent MCP server still
+reads as a healthy preset.
+
+Still Windows-only, unchanged: the `ocr-md` PowerShell pipeline (`ocr.ps1`) and
+`revit-tools`' Revit executable. Persona prose in the browser presets still names
+`%USERPROFILE%` in its launcher fallback; automatic launch makes that path rarely
+reached, and it was left as written to keep this diff reviewable.
+
 ## License
 This project is open-source and available for public use under the **MIT License**. You are free to use, modify, and distribute this software as you see fit.
 
