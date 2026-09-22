@@ -1,0 +1,25 @@
+{
+  "institution": "Example Bank",
+  "detect": ["example bank", "examplebank", "examplebank checking"],
+  "account_type": "checking",
+  "currency": "USD",
+  "sign_convention": "two-column",
+  "date_format": "%m/%d/%Y",
+  "header_hint": "Date",
+  "columns": {
+    "date": ["Date"],
+    "description": ["Particulars", "Description", "Details"],
+    "reference": ["Ref #", "Reference"],
+    "check_number": ["Chq #", "Check No"],
+    "amount_debit": ["Withdrawal", "Debit"],
+    "amount_credit": ["Deposit", "Credit"],
+    "balance": ["Balance", "Running Balance"]
+  },
+  "classify": {
+    "fee": ["service charge", "annual fee", "maintenance fee", "overdraft fee"],
+    "interest": ["interest earned", "interest paid"]
+  },
+  "ignore": ["Page"],
+  "first_mapped": "2026-09-22",
+  "files_seen": ["example-bank-2025Q1.csv"]
+}

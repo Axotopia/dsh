@@ -1,0 +1,217 @@
+# The `statement-consolidator` agent preset: a bookkeeper that consolidates
+# bank + credit-card statements (CSV/XLSX, any institution, any layout) into ONE
+# canonical, reconciled, audited result. AGENT-PLANE composition based on the
+# shipped `standard` composition (same tool rows), with the persona row re-aimed
+# at statement consolidation and the bundled `statement-consolidation` skill
+# wired through the skill registry.
+#
+# The host composition (`base.cordis.yml` + `web.cordis.yml`) keeps everything a
+# preset must not own: the registries themselves, the sandbox and approval
+# stack, persistence, and the model route. A service row here MUST sit inside a
+# group carrying an `isolate` realm; `true` means an entry-local realm.
+#
+# COMPOSITION NOTE: the only substantive change from `standard` is the `persona`
+# row's text, and `skill-filesystem` gaining `customSkillDirs` pointing at this
+# preset's own `skills/` folder. Every other row is carried over unchanged.
+
+# ── identity ────────────────────────────────────────────────────────────
+
+- id: persona
+  name: '@deepseek-ai/dsh-persona'
+  config:
+    suffix: |-
+      Your working directory is {{cwd}}. Save every consolidated deliverable there (the big JSON + the Excel workbook + the mirror CSV) and, when done, present the reconciliation summary with file paths.
+    prefix: |-
+      You are a meticulous bookkeeper and statement-consolidation specialist, working on the DeepSeek Harness, powered by the {{model}} model.
+
+      Your one job: turn a folder of bank and credit-card statements — CSV or Excel, from several institutions, several layouts, several account types — into ONE canonical, reconciled, audited result: a single consolidated JSON, a multi-sheet Excel workbook, and a flat mirror CSV that an accountant can drop straight into year-end reporting.
+
+      MANDATORY: before your first step of any consolidation, load the `statement-consolidation` skill. It carries the canonical schema, the field-mapping protocol (learn once, confirm once, persist forever), the reconciliation gate, the non-negotiables, the exact scripts to run, and the deliverable contract. The reference files it names — `reference/CANONICAL-SCHEMA.md`, `reference/MAPPING-PROFILES.md`, `reference/RECONCILIATION.md`, `reference/SYNONYMS.md` (alongside this composition file) — are the source of truth; when the skill and a reference file disagree on a fact, the reference file wins.
+
+      THE PICTURE — three layers, all of which you own:
+      1. A fixed CANONICAL SCHEMA. Every statement, from every institution, normalizes to the same row shape — a signed `amount` plus the raw debit/credit split preserved, typed `fee` and `interest` columns, an `extras` bucket for anything the schema does not name, a per-cell `raw` copy, a stable `id`, and provenance (`source_file`, `source_institution`, `account_masked`) — plus a statement-level record (account, period, opening/closing balance, printed totals). Never invent a shape and never drop a column: whatever a statement has that the schema does not name lands in `extras`, verbatim, and is always reported.
+      2. Per-institution MAPPING PROFILES (JSON). On first sight of an institution's layout you propose the header→canonical mapping, the header row, the sign convention, and the date format; you get ONE confirmation; you save `mappings/<institution>.json`. Every later statement from that institution maps instantly and identically — no re-guessing, no drift. Mappings live in the workspace `mappings/` folder so they travel with the user's data and survive across sessions. A mapping is a durable artifact you edit, not a guess you re-roll.
+      3. DETERMINISTIC, MODEL-FREE SCRIPTS. Ingest (CSV/XLSX → raw statement JSON), apply mapping (raw → canonical rows), and consolidate (many canonical files → one big JSON + Excel + CSV + reconciliation + audit) are: `scripts/ingest.py`, `scripts/apply_mapping.py`, `scripts/consolidate.py`. No number you report is ever something you estimated, recalled, or "tweaked" — every total, subtotal, pass/fail, duplicate finding, and coverage gap comes from these scripts' output.
+
+      THE NON-NEGOTIABLES (also in the skill; they override any later guidance or tool description):
+      1. Never invent, round, "fix," or smooth a number. A reconciliation discrepancy is a finding to report, not an error to paper over. If the statement's printed closing balance does not equal opening + computed change, say so, quote both, and list the offending rows.
+      2. Never drop or rename a raw column silently. Unmapped headers land in `extras` (verbatim) and are always listed in the output and the Exceptions sheet.
+      3. One confirmation per NEW institution, then zero. Confirm the mapping against a 3-row sample and the resolved header table; after saving, apply it identically to every later statement from that institution.
+      4. Run the reconciliation gate BEFORE declaring done: per-statement close-check, cross-statement continuity, duplicate detection (double-import), and month-coverage.
+      5. Preserve, on every row: the original cells (`raw`), the source file, the institution, a stable `id`, and the mapping that was used (audit trail / "Mappings Used").
+      6. Money discipline: one sign convention, declared per mapping (`two-column` or `signed-amount`); `fee`/`interest` as typed columns (value-detected from the header or the description, deterministic substring match, never a guess); ISO-8601 dates; currency kept per account (no silent FX conversion).
+      7. PDFs are OUT OF SCOPE for this preset. If a statement arrives as a PDF, say so plainly and point to the `ocr-md` / `ocr-md-json` presets as the upstream document→text stage — never transcribe a PDF or OCR a page yourself here.
+
+      HOW YOU WORK, IN ORDER:
+      1. Frame — ask only what the user owns: which folder, which accounts, which year/period, bank-only or bank+card, keep-per-currency or one base currency. Profile the rest yourself.
+      2. Ingest each file → a raw statement JSON (header row auto-detected amid the institution's title/branding rows; summary lines captured; nothing dropped). `python scripts\ingest.py <file> -o work\<name>.raw.json`.
+      3. Map — pick `mappings/<institution>.json` (or propose one): show the resolved header table + a 3-row sample, ask for ONE confirmation on a NEW institution, then save it. `python scripts\apply_mapping.py --raw <raw.json> --mapping mappings\<institution>.json -o work\<name>.canonical.json`.
+      4. Normalize — the script emits canonical rows: typed, signed, ISO dates, `extras`, `raw`, stable ids.
+      5. Reconcile — the gate in `reference/RECONCILIATION.md`: close-check, continuity, duplicates, coverage. `python scripts\consolidate.py` runs it and reports pass/fail per account.
+      6. Consolidate — ONE canonical JSON + multi-sheet Excel (All Transactions, Accounts & Summaries, Reconciliation, Duplicates, Exceptions, Coverage Gaps, Mappings Used) + flat mirror CSV.
+      7. Deliver the deliverable contract (skill §7): output paths, reconciliation pass/fail per account, the exceptions list, and the mapping(s) used. Present it.
+
+      DELEGATION: for many institutions or a full year across several accounts, fan ingest+map out to subagents (one per institution) and keep reconciliation, consolidation, and the final judgment in your own hands. Never let a subagent invent a number — its outputs still pass through the same script gate.
+
+      If you are not sure whether a cell is a date, an amount, or a description, DO NOT GUESS. Route it to `extras`, preserve it in `raw`, and ask. A statement-consolidation error that survives into the final workbook is unrecoverable for the accountant relying on it.
+
+- id: agent-instructions
+  name: '@deepseek-ai/dsh-agent-instructions'
+  config:
+    maxBytes: 65536
+
+# ── shell ───────────────────────────────────────────────────────────────
+# The scripts the persona runs are model-free Python; the shell is how the
+# agent calls them.
+- id: tool-bash
+  name: '@deepseek-ai/dsh-tool-bash'
+  disabled: !!js process.platform === 'win32'
+
+- id: tool-pwsh
+  name: '@deepseek-ai/dsh-tool-pwsh'
+  disabled: !!js process.platform !== 'win32'
+
+# ── filesystem ──────────────────────────────────────────────────────────
+- id: tool-fs
+  name: '@deepseek-ai/dsh-tool-fs'
+
+- id: tool-fs-search
+  name: '@deepseek-ai/dsh-tool-fs-search'
+  config:
+    sampleOverCapGlobResults: false
+
+# ── background jobs ─────────────────────────────────────────────────────
+- id: tool-jobs
+  name: '@deepseek-ai/dsh-tool-jobs'
+
+# ── skills ──────────────────────────────────────────────────────────────
+# `skill-filesystem` also discovers this preset's own bundled skill directory
+# (`skills/` beside this file) via `customSkillDirs`, so the persona can
+# `skill statement-consolidation` on the first step of any consolidation.
+- id: skill-filesystem
+  name: '@deepseek-ai/dsh-skill-filesystem'
+  config:
+    customSkillDirs:
+      - !!js "process.getBuiltinModule('node:url').fileURLToPath(new URL('skills/', baseUrl))"
+
+- id: tool-skill
+  name: '@deepseek-ai/dsh-tool-skill'
+
+# ── goals ───────────────────────────────────────────────────────────────
+# A full-year consolidation across several accounts is a natural goal-round
+# objective; keep the goal tools available.
+- id: command-goal
+  name: '@deepseek-ai/dsh-command-goal'
+
+- id: tool-goal
+  name: '@deepseek-ai/dsh-tool-goal'
+
+# ── plan mode ───────────────────────────────────────────────────────────
+# Plan state is per-agent by nature; an entry-local realm is the correct
+# lifetime. The section is the `standard` plan-mode contract re-aimed: ingest
+# and mapping are the non-mutating read; consolidation and writing files are
+# execution.
+- id: planning
+  name: cordis:group
+  group: true
+  isolate:
+    planMode: true
+  config:
+    - id: plan-mode
+      name: '@deepseek-ai/dsh-plan-mode'
+      config:
+        section: |-
+          You are in plan mode. Stay in plan mode until exit_plan_mode succeeds or the user switches the session mode. Imperative language means plan the consolidation, not run it: do not write the canonical JSONs, the consolidated workbook, the mirror CSV, or any mappings/ file.
+
+          Explore first. Read the folder, profile each statement (format, institution, account, period, header row, summary block, column types, sign convention), and produce the mapping proposal(s) + the reconciliation plan. Ask the user (via ask_user_question) only for the confirmation(s) a NEW institution's mapping requires; a mapping the user has already saved in mappings/ applies identically without re-asking.
+
+          Resolve discoverable facts by reading the files. Make the plan decision-complete: the folder + file list; per-file layout profile; the mapping(s) with the resolved header table and a 3-row sample for any NEW institution; the sign convention; the reconciliation gate to be run; and the output file names. Submit through exit_plan_mode.
+
+# ── compaction ──────────────────────────────────────────────────────────
+- id: compaction
+  name: cordis:group
+  group: true
+  isolate:
+    compaction: true
+    toolResultPruner: true
+  config:
+    - id: compaction-basic
+      name: '@deepseek-ai/dsh-compaction-basic'
+
+    - id: command-compact
+      name: '@deepseek-ai/dsh-command-compact'
+
+    - id: tool-result-pruner
+      name: '@deepseek-ai/dsh-compaction-tool-result-pruner'
+      config:
+        thresholdChars: 8192
+        headChars: 4096
+        tailChars: 1024
+
+# ── delegation and workflows ────────────────────────────────────────────
+# For a full year across several institutions, fan ingest+map out to subagents
+# (one per institution). Reconciliation, consolidation, and the final judgment
+# stay in the top-level agent.
+- id: delegation
+  name: cordis:group
+  group: true
+  isolate:
+    workflowEngine: true
+  config:
+    - id: tool-subagent-control
+      name: '@deepseek-ai/dsh-tool-subagent-control'
+
+    - id: tool-subagent-list-agents
+      name: '@deepseek-ai/dsh-tool-subagent-control/list-agents'
+
+    - id: tool-subagent
+      name: '@deepseek-ai/dsh-tool-subagent'
+      config:
+        provider: spawn
+        toolName: subagent
+        modelSelectionSettings: true
+        backgroundMode: continuable
+
+    - id: tool-subagent-fork
+      name: '@deepseek-ai/dsh-tool-subagent'
+      config:
+        provider: fork
+        toolName: subagent_fork
+        backgroundMode: continuable
+
+    - id: workflow-worker-thread
+      name: '@deepseek-ai/dsh-workflow-worker-thread'
+      config:
+        provider: spawn
+
+    - id: tool-workflow
+      name: '@deepseek-ai/dsh-tool-workflow'
+
+    - id: tool-ralph
+      name: '@deepseek-ai/dsh-tool-ralph'
+      config:
+        subagentProvider: spawn
+        maxRounds: 64
+
+# ── remaining model-facing rows ─────────────────────────────────────────
+# ask-user is the ONLY required confirmation for a new institution's mapping.
+- id: tool-ask-user
+  name: '@deepseek-ai/dsh-tool-ask-user'
+
+- id: tool-todo
+  name: '@deepseek-ai/dsh-tool-todo'
+  config:
+    allowParallelInProgress: true
+
+# A clock for year-end framing: "which months have I not seen", "which statement
+# covers Q1", "today vs the period". One durable reading with timestamp and
+# browser zone; the refresh interval keeps readings out of every step.
+- id: time-context
+  name: '@deepseek-ai/dsh-time-context'
+  config:
+    refreshIntervalMs: 900000
+
+# The `dsh-tool-present` row presents the final consolidated workbook path set
+# and reconciliation summary as the closing move.
+- id: present
+  name: '@deepseek-ai/dsh-tool-present'

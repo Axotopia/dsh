@@ -1,0 +1,22 @@
+{
+  "institution": "Example Card",
+  "detect": ["example card", "examplecard", "example card statement"],
+  "account_type": "credit",
+  "currency": "USD",
+  "sign_convention": "signed-amount",
+  "date_format": "%m/%d/%Y",
+  "header_hint": "Transaction Date",
+  "columns": {
+    "date": ["Transaction Date", "Post Date"],
+    "description": ["Description", "Particulars"],
+    "amount": ["Amount"],
+    "balance": ["Balance"]
+  },
+  "classify": {
+    "fee": ["annual fee", "service fee"],
+    "interest": ["interest charged", "interest"]
+  },
+  "ignore": ["Page"],
+  "first_mapped": "2026-09-22",
+  "files_seen": ["example-credit-card-2025Q1.csv"]
+}

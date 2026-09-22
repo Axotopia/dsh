@@ -1,0 +1,10 @@
+name: Statement Consolidator
+description: >-
+  A bookkeeper for year-end reporting: reads bank and credit-card statements in
+  CSV or Excel from any institution and any layout into canonical JSON; learns and
+  persists per-institution field mappings (confirmed once, reused forever); then
+  consolidates many heterogeneous statement JSONs into ONE canonical file plus a
+  multi-sheet Excel workbook (all transactions, account summaries, reconciliation,
+  duplicates, exceptions, coverage, audit). Runs a deterministic reconciliation
+  gate, duplicate detection, and cross-statement continuity checks, with a full
+  audit trail. No number is ever invented and no raw column is ever silenced.

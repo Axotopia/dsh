@@ -1,0 +1,77 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://example.org/statement-consolidator/CANONICAL-SCHEMA.json",
+  "title": "Statement Consolidator canonical envelope (draft-07)",
+  "$ref": "#/definitions/envelope",
+  "definitions": {
+    "money": { "type": [ "number", "null" ], "description": "Signed or unsigned money, 2 decimals; ISO 4217 context provided by the row/envelope `currency`." },
+    "date":  { "type": [ "string", "null" ], "pattern": "^\\d{4}-\\d{2}-\\d{2}$", "description": "ISO-8601 date (year-month-day)." },
+    "account_type": { "type": "string", "enum": [ "checking", "savings", "credit", "loan", "other" ] },
+    "row": {
+      "type": "object",
+      "required": [ "id", "source_institution", "source_file", "account_type", "currency", "date", "description", "raw" ],
+      "properties": {
+        "id":                 { "type": "string", "minLength": 8, "maxLength": 32, "description": "Stable sha1-16 identity hash." },
+        "source_institution": { "type": "string" },
+        "source_file":        { "type": "string" },
+        "account_masked":     { "type": [ "string", "null" ] },
+        "account_type":       { "$ref": "#/definitions/account_type" },
+        "currency":           { "type": "string", "pattern": "^[A-Z]{3}$" },
+        "date":               { "$ref": "#/definitions/date" },
+        "post_date":          { "$ref": "#/definitions/date" },
+        "description":        { "type": "string" },
+        "reference":          { "type": [ "string", "null" ] },
+        "check_number":       { "type": [ "string", "null" ] },
+        "amount":             { "$ref": "#/definitions/money", "description": "Signed amount of the row, per the institution's declared sign_convention." },
+        "amount_debit":       { "$ref": "#/definitions/money" },
+        "amount_credit":      { "$ref": "#/definitions/money" },
+        "fee":                { "$ref": "#/definitions/money" },
+        "interest":           { "$ref": "#/definitions/money" },
+        "balance_after":      { "$ref": "#/definitions/money" },
+        "category_hint":      { "type": [ "string", "null" ], "description": "fee | interest | fee,interest | null" },
+        "dup":                { "type": [ "boolean", "null" ], "default": false },
+        "extras":             { "type": "object" },
+        "raw":                { "type": "object" }
+      }
+    },
+    "statement": {
+      "type": "object",
+      "properties": {
+        "period_start":    { "$ref": "#/definitions/date" },
+        "period_end":      { "$ref": "#/definitions/date" },
+        "opening_balance": { "$ref": "#/definitions/money" },
+        "closing_balance": { "$ref": "#/definitions/money" },
+        "printed_total":   { "$ref": "#/definitions/money" },
+        "summary_lines":   { "type": "array", "items": { "type": "string" } }
+      }
+    },
+    "mapping_used": {
+      "type": "object",
+      "properties": {
+        "mapping_file":     { "type": [ "string", "null" ] },
+        "institution":      { "type": [ "string", "null" ] },
+        "sign_convention":  { "type": [ "string", "null" ], "enum": [ "two-column", "signed-amount", null ] },
+        "date_format":      { "type": [ "string", "null" ] },
+        "columns_resolved": { "type": "object" },
+        "resolved_by":      { "type": "object" },
+        "unmapped_headers": { "type": "array", "items": { "type": "string" } }
+      }
+    },
+    "envelope": {
+      "type": "object",
+      "required": [ "source_file", "institution", "account_type", "currency", "statement", "rows" ],
+      "properties": {
+        "source_file":   { "type": "string" },
+        "institution":   { "type": [ "string", "null" ] },
+        "account_masked":{ "type": [ "string", "null" ] },
+        "account_type":  { "$ref": "#/definitions/account_type" },
+        "currency":      { "type": "string", "pattern": "^[A-Z]{3}$" },
+        "statement":     { "$ref": "#/definitions/statement" },
+        "rows":          { "type": "array", "items": { "$ref": "#/definitions/row" } },
+        "row_count":     { "type": "integer", "minimum": 0 },
+        "mapping_used":  { "$ref": "#/definitions/mapping_used" },
+        "generated_utc": { "type": "string", "pattern": "\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}Z" }
+      }
+    }
+  }
+}
