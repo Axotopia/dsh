@@ -21,7 +21,9 @@ We are rapidly moving past the era of standard prompt-and-response chatbots and 
 
 > "Install the agent preset at https://github.com/Axotopia/dsh/tree/main/researcher, install any dependencies it needs, and verify it mounts. Grant Full Access to the filesystem for this job."
 
-Same pattern for every preset here - `researcher`, `property-researcher`, `research-swarm`, `debate-team`, `legal-financial-consul`, `revit-tools`, `ocr-md`, `vacation-planner`. Approve any prompts the agent raises (Full Access is needed only because the preset lands outside the session workspace). That self-serve path is genuinely enough for most research work.
+Same pattern for every preset here - `chat`, `researcher`, `property-researcher`, `research-swarm`, `debate-team`, `legal-financial-consul`, `revit-tools`, `ocr-md`, `vacation-planner`. Approve any prompts the agent raises (Full Access is needed only because the preset lands outside the session workspace). That self-serve path is genuinely enough for most research work.
+
+**New: `chat`** - a general-purpose assistant with an escalation ladder, in the shape of the chat models you already use. It answers from its own knowledge by default and mounts no filesystem or shell tool at all; it checks the web when the answer depends on current facts; it runs a deliberate multi-source research pass when a question is genuinely complex; and it fans out to subagents, a workflow or a ralph loop only when the work exceeds one context. The whole design problem is restraint, so the persona names the four rungs explicitly and forbids climbing one because it is available - a question answerable without tools must be answered without tools. Eight tools in total. See [`chat/README.md`](chat/README.md).
 
 **New: `legal-financial-consul`** - a fiduciary-grade legal and financial Consul: it interrogates the fact pattern, fans a six-lane research swarm across primary authority (trust and estate law, asset protection, tax, situs comparison, an adverse-party threat census, and cross-border/digital legacy), then puts every candidate structure through an independent Red Team assault and a Mediator hardening pass before delivering a graded, cited memorandum with the four mortality scenarios and a residual-risk register. It is not legal advice and says so in writing. See [`legal-financial-consul/README.md`](legal-financial-consul/README.md).
 
@@ -37,6 +39,26 @@ Same pattern for every preset here - `researcher`, `property-researcher`, `resea
 
 > These presets are provided strictly as **proof of concept** models, not drop-in production solutions. Review the composition (`agent.cordis.yml`), routing, system prompts, and tool integrations, and adapt them to your data, hardware, and use cases.
 ## Changelog
+
+### 2026-09-21 — add the `chat` preset
+
+A general-purpose assistant that behaves like a chat model first and an agent
+second, with escalation made explicit rather than left to the model's judgement.
+Four rungs — answer, check, research, swarm — and a persona that forbids climbing
+one because it is available. Eight tools: `web_search`, `web_fetch`, `subagent`,
+`list_agents`, `send_message`, `interrupt_agent`, `workflow`, `ralph`.
+
+Two things are deliberate about the composition. The persona is
+`complete: true` with `includeRuntimeContext: false`, so *nothing but the persona*
+steers the model — no generic tool guidance nudging it to delegate, and no
+sandbox/approval prose, since the preset mounts no filesystem or shell tool. And
+it mounts none of the usual scaffolding: no filesystem, shell, jobs, todos,
+goals, plan mode or skills, because none of them serve a chat turn.
+
+The delegation group mirrors the bundled `standard` preset's, minus the two
+optional providers DSH does not install (codex, claude-code) and minus `fork`,
+whose in-process backend the host ships disabled. `workflowEngine` is isolated so
+`workflow`/`ralph` and their worker share one engine of the preset's own.
 
 ### 2026-09-21 — the browser tier now starts off Windows
 
