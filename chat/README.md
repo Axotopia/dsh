@@ -39,6 +39,13 @@ Delegates join their parent's composition, so a spawned subagent inherits this
 same persona — the persona therefore tells a delegate that it is one: do the
 work, return findings, do not chat and do not re-delegate.
 
+One rung-1 rule is worth repeating, because it is the most common way a web
+answer goes wrong: `web_search` only *locates* sources — it returns titles and
+URLs, not page text — so any claim that depends on what a page says must be read
+with `web_fetch` first. The model is told never to answer from a headline, title
+or URL, and to say in one line what it could not verify when a page will not
+load or blocks it.
+
 ## Install
 
 > **Zero-setup path — let DSH install it for you.** In any DSH session, point it
@@ -81,7 +88,7 @@ Tuning knobs, if its judgement does not match yours:
 | More or fewer searches per call | `searchMaxQueries` in the `tool-web` row (3 as shipped; the tool's own default is 4) |
 | A shorter leash on ralph | `maxRounds` in the `tool-ralph` row (32 as shipped; the tool's default is 256) |
 | Subsume the whole prompt | The persona is `complete: true`, so editing `persona.prefix` is editing the entire system prompt |
-| The date in the prompt | DSH ships no time-context row, so there is none to keep. If your deployment mounts one, drop `complete: true` and it will reach the model |
+| The date in the prompt | `@deepseek-ai/dsh-time-context` is available and deliberately **not** mounted. It injects a timestamp message at *every* step through an `agent/pre-step` listener — a message injection, not a system-prompt section — so `includeRuntimeContext: false` does not suppress it. That is a per-turn cost, not a missing capability. Add the row (see the comment in `agent.cordis.yml`) if you would rather have the date on every turn |
 
 ## Design notes
 
@@ -94,6 +101,13 @@ Tuning knobs, if its judgement does not match yours:
 - **What is deliberately absent.** No filesystem, shell, jobs, todos, goals, plan
   mode, skills or `present`. None of them serve a chat turn, and each adds prompt
   guidance pulling toward multi-step behaviour.
+- **It says out loud what it cannot do.** Because none of that is mounted, the
+  persona states the limit plainly: no filesystem, shell, code execution or image
+  reading, so it cannot open, save or edit a file, run a script, or read a
+  document or image you attach. When a request needs that it says so in one line
+  and offers the alternative that works — paste the relevant text, or point it at
+  a URL. It never offers to save or export a file, and never pretends to have
+  read something it had no way to read.
 - **The delegation group mirrors the bundled `standard` preset's**, minus the two
   optional providers DSH does not install (codex, claude-code) and minus `fork`,
   whose in-process backend the host ships disabled. `workflowEngine` is isolated
