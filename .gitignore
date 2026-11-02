@@ -13,3 +13,14 @@ Thumbs.db
 
 # local build artifacts (not part of the distributable)
 .build/
+.env
+.env.*
+*.pem
+*.key
+*.p12
+*.pfx
+credentials*
+*.log
+__pycache__/
+*.pyc
+desktop.ini
