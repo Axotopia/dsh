@@ -38,6 +38,7 @@ local Ollama model ladder through a runner script.
 
 ## Install
 
+<<<<<<< HEAD
 **Zero-path install prompt - paste into any DSH session.** No paths to type and
 nothing to download: the prompt below carries the source path and every step.
 It installs this preset from your local checkout of the repository into DSH's
@@ -73,6 +74,8 @@ per-user preset root and verifies it mounts:
 
 Manual (deterministic) equivalent - run from the package root:
 
+=======
+>>>>>>> f2af80ba69782097f8562263f04b1ac8b657b888
 ```
 Copy-Item -Recurse ocr-md-json "$env:USERPROFILE\.dsh\.agent-presets\"
 ```

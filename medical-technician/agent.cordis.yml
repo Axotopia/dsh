@@ -33,7 +33,11 @@
 - id: persona
   name: '@deepseek-ai/dsh-persona'
   config:
+<<<<<<< HEAD
     prefix: |-
+=======
+    text: |-
+>>>>>>> f2af80ba69782097f8562263f04b1ac8b657b888
       You are the MEDICAL TECHNICIAN — the INTEGRATIVE CAUSAL ARCHITECT, powered by {{model}}, working from {{cwd}}, deployed on the medical-technician preset (Research Swarm infrastructure: parallel subagents, workflows, ralph rounds, live web_search, and a real-browser research tier).
 
       ═══════════════════════════════════════════════════════════════════════
@@ -925,7 +929,11 @@
     # profile at composition time via !!js, same mechanism the researcher-browser
     # preset uses. Forward slashes are valid for Node cwd.
     command: 'node'
+<<<<<<< HEAD
     cwd: !!js (process.env.USERPROFILE || process.env.HOME) + '/.dsh/.agent-presets/medical-technician/server'
+=======
+    cwd: !!js process.env.USERPROFILE + '/.dsh/.agent-presets/medical-technician/server'
+>>>>>>> f2af80ba69782097f8562263f04b1ac8b657b888
     args:
       - 'server.js'
     toolCallTimeoutMs: 120000

@@ -8,7 +8,18 @@
  * of its own. When the endpoint is unreachable it runs THE PACKAGED
  * launch-browser.cmd (a visible dedicated-profile window opens) and waits for
  * CDP; disable that with RESEARCH_AUTO_LAUNCH=0. Tools speak MCP over stdio
+<<<<<<< HEAD
  * and are exposed to DSH agents as mcp__research-browser__*.
+=======
+ * and are exposed to DSH agents as mcp__medical-technician__* (medical-technician
+ * copy; DSH namespaces tools via the composition's serverName — serverInfo keeps
+ * the upstream name and is cosmetic).
+ *
+ * SWARM HARDENING: every agent joined to this preset shares THIS server
+ * process and its single active tab, so ALL tool calls are serialized through
+ * a FIFO queue (enqueueToolCall, below) — parallel agents can observe the
+ * browser, never interleave mid-action on it.
+>>>>>>> f2af80ba69782097f8562263f04b1ac8b657b888
  *
  * NOTE on evaluate(): every function sent to the page MUST be self-contained
  * (helpers inlined), because Puppeteer serializes exactly one function per
@@ -826,6 +837,17 @@ const tools = [
       return withBrowser(async () => {
         const page = await resolveActivePage();
         const before = page.url();
+<<<<<<< HEAD
+=======
+        // SWARM TAB GUARD: snapshot the open-page set BEFORE clicking. Only
+        // pages CREATED by this click may later be treated as popups — the
+        // old heuristic ("any other open tab") force-navigated the active
+        // tab and CLOSED unrelated tabs in multi-tab sessions. The call
+        // queue makes the snapshot airtight: no other agent can open a page
+        // inside this call's window. Snapshot failure disables popup
+        // handling entirely (fail-safe: never close what we did not create).
+        const pagesBefore = await listPages().catch(() => null);
+>>>>>>> f2af80ba69782097f8562263f04b1ac8b657b888
         let clicked = null;
         if (text) {
           const want = text.toLowerCase().replace(/\s+/g, ' ');
@@ -850,7 +872,13 @@ const tools = [
         let popup = null;
         try {
           const pagesNow = await listPages();
+<<<<<<< HEAD
           popup = pagesNow.find((p) => p !== page && !p.isClosed()) ?? null;
+=======
+          popup = (pagesBefore
+            ? pagesNow.find((p) => !pagesBefore.includes(p) && !p.isClosed())
+            : null) ?? null;
+>>>>>>> f2af80ba69782097f8562263f04b1ac8b657b888
         } catch { /* listing hiccup */ }
         if (popup && clicked.href && popup.url() !== clicked.href) {
           // Forced _blank style behavior: converge navigation into THIS tab.
@@ -1345,6 +1373,26 @@ server.setRequestHandler(ListToolsRequestSchema, async () => ({
   tools: tools.map(({ handler, ...definition }) => definition),
 }));
 
+<<<<<<< HEAD
+=======
+// ── swarm hardening: one queue, one browser, one active tab ─────────────────
+// Every agent joined to this preset shares THIS server process, and every page
+// tool targets the shared activePage; parallel agents calling tools
+// concurrently would stomp each other's tab (navigate over navigate,
+// extract_text reading another agent's page). Serialize ALL tool calls through
+// a FIFO promise chain: strictly one call executes at a time, so a call
+// observes the browser exactly as its predecessor left it. A failed call never
+// clogs the queue (catch(noop) re-arms the chain), and added latency for a
+// queued call is bounded by the in-flight call's own time budget
+// (CALL_TIMEOUT_MS / NAV_TIMEOUT_MS) — every handler path is time-boxed.
+let queueTail = Promise.resolve();
+function enqueueToolCall(fn) {
+  const run = queueTail.catch(noop).then(fn);
+  queueTail = run.then(noop, noop);
+  return run;
+}
+
+>>>>>>> f2af80ba69782097f8562263f04b1ac8b657b888
 server.setRequestHandler(CallToolRequestSchema, async (request) => {
   const name = request.params.name;
   const args = request.params.arguments ?? {};
@@ -1354,7 +1402,11 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
     return fail(`unknown tool "${name}". Available: ${tools.map((t) => t.name).join(', ')}`);
   }
   try {
+<<<<<<< HEAD
     const result = await tool.handler(args);
+=======
+    const result = await enqueueToolCall(() => tool.handler(args));
+>>>>>>> f2af80ba69782097f8562263f04b1ac8b657b888
     process.stderr.write(`[research-browser] ${name} -> done in ${Date.now() - startedAt}ms${result?.isError ? ' (isError)' : ''}\n`);
     return result;
   } catch (error) {

@@ -53,6 +53,7 @@ This hardening was added after a red-team audit of the single-agent `researcher`
 **Manual (Windows):**
 
 1. Copy this folder to `%USERPROFILE%\.dsh\.agent-presets\research-swarm` (the folder name is the preset id — keep it `research-swarm`).
+<<<<<<< HEAD
 2. Install server dependencies **hoisted** (real files, no junctions — a `node_modules` any later copy method preserves):
    ```
    cd %USERPROFILE%\.dsh\.agent-presets\research-swarm\server
@@ -63,6 +64,15 @@ This hardening was added after a red-team audit of the single-agent `researcher`
 
 > **Copying an installed copy of this preset** (backup, migration to another machine): if its `server\node_modules` is junction-based, either re-run the hoisted `pnpm install` above at the destination or copy with a junction-preserving method — plain `Copy-Item`/`robocopy` will silently expand the junctions into a broken layout. The zero-click preset (Axoworks private repo) vendors its copy of this server already hoisted for exactly this reason.
 
+=======
+2. Install server dependencies (produces a self-contained `node_modules` with junctions into the preset's own store — nothing global is touched):
+   ```
+   cd %USERPROFILE%\.dsh\.agent-presets\research-swarm\server
+   pnpm install
+   ```
+3. Restart the DSH host and create a session on the `research-swarm` preset.
+
+>>>>>>> f2af80ba69782097f8562263f04b1ac8b657b888
 **Requirements:** Windows 10/11 (the launcher is a `.cmd` batch file), a recent DSH build carrying the `@deepseek-ai/*` plugin set, Node.js ≥ 20 (DSH's bundled Node works), pnpm 10+, and Microsoft Edge (default) / Chrome / Brave.
 
 **Model requirements: vision is optional.** A vision-capable multimodal LLM is **not** required. The research loop is text-first — `navigate`, `click` (CSS or visible text), `extract_text`, `html`, tab management, and `is_challenge` (DOM-text signature scanning, not pixel analysis) all work with a text-only model, and DSH automatically replaces image content with a text placeholder on routes declared text-only. The one vision-dependent tool is `screenshot` (returns PNG image content): on a text-only model it degrades to that placeholder, so simply skip it. Vision-capable models can use `screenshot` for layout sanity checks — measurements still come from page data, never pixels (evidence protocol).

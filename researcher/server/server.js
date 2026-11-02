@@ -127,16 +127,24 @@ function notRunningMessage() {
   return (
     `Cannot reach the research browser DevTools endpoint at ${CDP_URL} — ` +
     'the dedicated browser is not reachable. ' +
+<<<<<<< HEAD
     `Ask the user to run ${process.platform === 'win32' ? 'launch-browser.cmd' : 'launch-browser.sh'} (preset folder), then retry.`
+=======
+    'Ask the user to run launch-browser.cmd (preset folder), then retry.'
+>>>>>>> f2af80ba69782097f8562263f04b1ac8b657b888
   );
 }
 
 // ── automatic start of the packaged launcher ────────────────────────────────
 
 const AUTO_LAUNCH_ENABLED = process.env.RESEARCH_AUTO_LAUNCH !== '0';
+<<<<<<< HEAD
 const LAUNCHER_PATH = fileURLToPath(
   new URL(process.platform === 'win32' ? '../launch-browser.cmd' : '../launch-browser.sh', import.meta.url),
 );
+=======
+const LAUNCHER_PATH = fileURLToPath(new URL('../launch-browser.cmd', import.meta.url));
+>>>>>>> f2af80ba69782097f8562263f04b1ac8b657b888
 const AUTO_LAUNCH_TIMEOUT_MS = intIn(process.env.RESEARCH_AUTO_LAUNCH_TIMEOUT_MS, 25_000, 5_000, 120_000);
 const CONNECT_OPTS = { browserURL: CDP_URL, defaultViewport: null, protocolTimeout: CALL_TIMEOUT_MS };
 
@@ -148,6 +156,7 @@ function autoLaunchBrowser() {
   if (Date.now() - lastAutoLaunchAt < 10_000) return false; // cooldown
   lastAutoLaunchAt = Date.now();
   try {
+<<<<<<< HEAD
     // Windows starts the packaged .cmd through cmd.exe; every other platform
     // starts the sibling POSIX launcher directly (it needs no shell).
     const child = process.platform === 'win32'
@@ -159,6 +168,16 @@ function autoLaunchBrowser() {
         { stdio: 'ignore', detached: true, windowsHide: true, windowsVerbatimArguments: true },
       )
       : spawn(LAUNCHER_PATH, [], { stdio: 'ignore', detached: true });
+=======
+    const comspec = process.env.comspec || 'cmd.exe';
+    const child = spawn(
+      comspec,
+      ['/d', '/s', '/c', `"${LAUNCHER_PATH}"`],
+      // verbatim is REQUIRED: without it Node escapes our quotes and cmd
+      // receives a mangled path that fails silently under stdio ignore.
+      { stdio: 'ignore', detached: true, windowsHide: true, windowsVerbatimArguments: true },
+    );
+>>>>>>> f2af80ba69782097f8562263f04b1ac8b657b888
     child.on('error', (e) => process.stderr.write(`[research-browser] autolaunch spawn error: ${shortErr(e)}\n`));
     child.unref();
     process.stderr.write(`[research-browser] browser not reachable — started packaged launcher: ${LAUNCHER_PATH}\n`);

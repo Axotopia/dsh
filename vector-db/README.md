@@ -169,6 +169,7 @@ preview-first, and the tool refuses to run without at least one filter.
 
 ## Install / prerequisites
 
+<<<<<<< HEAD
 > **Zero-setup path — let DSH install it for you.** In any DSH session, paste the
 > prompt below. It installs **both** halves of this folder — the `num_ctx` Python
 > CLI *and* the `dsh-kb` knowledge base — and finishes with an end-to-end smoke
@@ -243,6 +244,30 @@ preview-first, and the tool refuses to run without at least one filter.
 > `OLLAMA_CTX_VRAM_MIB`. Approve any prompts the agent raises, and add missing
 > provider/model keys in Settings → Models if a referenced model isn't installed.
 > Skip this path if you prefer the deterministic manual steps below.
+=======
+> **Zero-setup path — let DSH install it for you.** In any DSH session, just
+> point it at this repository — no target path, no manual steps:
+>
+> > "Install the `vector-db` package at
+> > https://github.com/Axotopia/dsh/tree/main/vector-db, and verify it
+> > runs. **First check the prerequisites — if Python 3.9+ or the Ollama CLI is not
+> > installed, install it.** For Python: `winget install Python.Python.3.13` (or the
+> > official installer from https://python.org) and add it to PATH. For Ollama:
+> > `winget install Ollama.Ollama` (or download from https://ollama.com/download) and make
+> > sure the Ollama service is running. Then confirm `python --version` and
+> > `ollama --version`. Finally ask it to analyse a local model and show `num_ctx`
+> > recommendations (e.g. for `qwen3:8b`). Grant Full Access to the filesystem for this job."
+>
+> Notes: the package is a **Python CLI**, so the host needs **Python 3.9+** and the
+> **Ollama CLI**; the prompt above installs them if they are missing. There is **no
+> `pip install`** (the tool uses only the Python standard library) and no build step.
+> NVIDIA drivers are needed only for **automatic VRAM detection** (`nvidia-smi`) — that
+> one usually ships with your GPU driver rather than being installed by the agent; if it's
+> unavailable, pass `--vram-mib` or set `OLLAMA_CTX_VRAM_MIB` instead. Approve any prompts
+> the agent raises, and add missing provider/model keys in Settings → Models if a
+> referenced model isn't installed. Skip this path if you prefer the deterministic manual
+> steps below.
+>>>>>>> f2af80ba69782097f8562263f04b1ac8b657b888
 
 **No `pip install` needed** — the tool is Python 3.9+ standard library only.
 

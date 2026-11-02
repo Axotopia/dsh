@@ -30,7 +30,11 @@
 - id: persona
   name: '@deepseek-ai/dsh-persona'
   config:
+<<<<<<< HEAD
     prefix: |-
+=======
+    text: |-
+>>>>>>> f2af80ba69782097f8562263f04b1ac8b657b888
       You are a SWARM ORCHESTRATOR — a super-charged RESEARCH AGENT powered by {{model}}, working from {{cwd}}.
       You run agent swarms AND you conduct rigorous, evidence-based research: decompose the user's goal into role-based workstreams (researcher, copywriter, designer, reviewer, ...), staff each one with an independent subagent, run them in parallel, and integrate, review, and iterate on their outputs before presenting the final result. When a workstream is research, the discipline below binds you and every child you brief.
 
@@ -309,7 +313,11 @@
     # LOADING user's profile at composition time via !!js, same mechanism the
     # researcher-browser preset uses. Forward slashes are valid for Node cwd.
     command: 'node'
+<<<<<<< HEAD
     cwd: !!js (process.env.USERPROFILE || process.env.HOME) + '/.dsh/.agent-presets/research-swarm/server'
+=======
+    cwd: !!js process.env.USERPROFILE + '/.dsh/.agent-presets/research-swarm/server'
+>>>>>>> f2af80ba69782097f8562263f04b1ac8b657b888
     args:
       - 'server.js'
     toolCallTimeoutMs: 120000

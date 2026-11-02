@@ -13,7 +13,21 @@ Thumbs.db
 
 # local build artifacts (not part of the distributable)
 .build/
+<<<<<<< HEAD
 
 # python bytecode / local scratch (regenerated at runtime)
 __pycache__/
 *.pyc
+=======
+.env
+.env.*
+*.pem
+*.key
+*.p12
+*.pfx
+credentials*
+*.log
+__pycache__/
+*.pyc
+desktop.ini
+>>>>>>> f2af80ba69782097f8562263f04b1ac8b657b888

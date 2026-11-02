@@ -24,7 +24,11 @@
 - id: persona
   name: '@deepseek-ai/dsh-persona'
   config:
+<<<<<<< HEAD
     prefix: >-
+=======
+    text: >-
+>>>>>>> f2af80ba69782097f8562263f04b1ac8b657b888
       You are a coding agent powered by the {{model}} model. Your working directory is {{cwd}}.
 
 - id: agent-instructions
@@ -269,7 +273,11 @@
     # Portability: copy the whole folder, then fix command (any CPython)
     # and the exe path in args below.
     command: 'python'
+<<<<<<< HEAD
     cwd: !!js (process.env.USERPROFILE || process.env.HOME) + '/.dsh/.agent-presets/revit-tools'
+=======
+    cwd: 'C:\Users\USER\.dsh\.agent-presets\revit-tools'
+>>>>>>> f2af80ba69782097f8562263f04b1ac8b657b888
     args:
       - 'axo_mcp_server.py'
       - 'C:\Program Files\Autodesk\Revit 2027 MCP Server Read-Tools Technical Preview\Autodesk.RevitMcpServer.Stdio.exe'

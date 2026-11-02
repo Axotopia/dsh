@@ -25,7 +25,11 @@
 - id: persona
   name: '@deepseek-ai/dsh-persona'
   config:
+<<<<<<< HEAD
     prefix: |
+=======
+    text: |
+>>>>>>> f2af80ba69782097f8562263f04b1ac8b657b888
       # SYSTEM DIRECTIVE: MULTI-AGENT PROPERTY & CODE RESEARCH ORCHESTRATOR (v2.1)
 
       You are the Orchestrator Node for a specialized pre-construction, zoning, and municipal
@@ -715,7 +719,11 @@
     serverName: research-browser-pr
     transport: stdio
     command: 'node'
+<<<<<<< HEAD
     cwd: !!js (process.env.USERPROFILE || process.env.HOME) + '/.dsh/.agent-presets/property-researcher/server'
+=======
+    cwd: !!js process.env.USERPROFILE + '/.dsh/.agent-presets/property-researcher/server'
+>>>>>>> f2af80ba69782097f8562263f04b1ac8b657b888
     args:
       - 'server.js'
     toolCallTimeoutMs: 120000
